@@ -13,7 +13,7 @@ import {
 import { changeStarColor, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
-  validateSearch: (search: Record<string, unknown>) => ({ concert: search.concert === true || search.concert === "true" }),
+  validateSearch: (search: Record<string, unknown>): { concert?: boolean } => ({ concert: search["concert"] === true || search["concert"] === "true" }),
   head: () => ({
     meta: [
       { title: "Live Light — FanDrop" },

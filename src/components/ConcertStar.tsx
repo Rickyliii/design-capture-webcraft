@@ -1,6 +1,4 @@
-import type { StarType } from "@/lib/light";
-
-export function ConcertStar({ type, className = "" }: { type: StarType; className?: string }) {
+export function ConcertStar({ type, className = "" }: { type: string; className?: string }) {
   return <svg viewBox="0 0 100 100" className={className} aria-label={`${type} star`} role="img" fill="currentColor">
     {type === "Nova" ? <path d="M50 3 Q56 39 97 50 Q56 59 50 97 Q44 59 3 50 Q44 39 50 3Z" />
       : type === "Comet" ? <><path d="M72 5 64 43 95 48 62 59 66 83 48 65 10 94 37 56 18 40 47 40Z" /><circle cx="53" cy="51" r="9" /></>
