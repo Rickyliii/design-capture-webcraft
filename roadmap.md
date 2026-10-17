@@ -16,6 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
+- [ ] Awakening 3.0 Phase A: local presenter music, editable cues, shared scheduled timeline, authorized two-phone verification; stop before Phase B/C
 - [x] Rewards: 4 stage names, tap to see rewards
 - [x] Phase A: 8 colors, 4 lightstick modes, Show Control (custom color, stop, presence)
 - Phase B: Forge Your Constellation
