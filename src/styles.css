@@ -46,6 +46,8 @@
   --star-crimson-red: #EF4444;
   --star-solar-gold: #FACC15;
   --star-amber: #F59E0B;
+  --qr-paper: #fff;
+  --qr-ink: #000;
   --radius: 1.25rem;
   --background: oklch(0.975 0.012 95);
   --foreground: oklch(0.16 0.02 280);
@@ -141,3 +143,7 @@
   .lightstick-star, .lightstick-aurora, .animate-breathe { animation: none !important; }
   .animate-breathe { opacity: .25; }
 }
+
+.participation-qr { background: var(--qr-paper); color: var(--qr-ink); }
+.participation-qr svg > path:first-of-type { fill: var(--qr-paper); }
+.participation-qr svg > path:last-of-type { fill: var(--qr-ink); }

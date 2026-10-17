@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { LIGHT_EVENT_ID, PRESENCE_CHANNEL, TEAMS, TEAM_IDS, isHex, type Command, type ShowState } from "@/lib/light";
 import { amIAdmin, getShowStats, sendShowCommand } from "@/lib/light.functions";
+import { ParticipationQR } from "@/components/ParticipationQR";
 import { MusicShowConsole } from "@/components/MusicShowConsole";
 
 export const Route = createFileRoute("/show-control")({
@@ -33,6 +34,7 @@ function ShowControl() {
       <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-3xl font-extrabold md:text-4xl">FANDROP LIVE — THE AWAKENING</h1>
         <p className="font-mono text-xs opacity-60">Justin Bieber · Scotiabank Arena · event {LIGHT_EVENT_ID}</p>
+        <ParticipationQR />
         {session === undefined ? null : session ? <Panel session={session} /> : <SignIn />}
       </div>
     </div>
@@ -128,11 +130,6 @@ function Panel({ session }: { session: Session }) {
   return (
     <div className="mt-6 space-y-6">
       <MusicShowConsole state={state} onState={setState} send={send} />
-      <button onClick={() => send("stop", "STOP SHOW")}
-        className="w-full rounded-2xl border-4 border-destructive bg-destructive py-5 font-display text-2xl font-extrabold text-destructive-foreground active:scale-[.99]">
-        ■ {busy === "STOP SHOW" ? "STOPPING…" : "STOP SHOW"}
-      </button>
-
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           ["Current mode", describe(state), true],
@@ -150,6 +147,7 @@ function Panel({ session }: { session: Session }) {
         Last command: {last ? `${last.ok ? "✓" : "✕"} ${last.text}` : "none yet this session"}
       </p>
 
+      <details className="border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Manual lighting · 手动灯光</summary><div className="mt-4 space-y-6">
       <section>
         <h2 className="sticker mb-2 opacity-70">Whole-crowd color</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -189,7 +187,8 @@ function Panel({ session }: { session: Session }) {
           <span key={c} className="flex items-center gap-2 rounded-full border border-background/20 px-3 py-1"><span className="h-3 w-3 rounded-full" style={{ background: TEAMS[c].hex }} />Team {TEAMS[c].label}: {stats.teams[c] ?? 0}</span>
         ))}
       </div>
-      <div className="flex justify-between">{out}<Link to="/light" className="text-sm underline opacity-60">Open fan lightstick</Link></div>
+      </div></details>
+      <div className="flex flex-wrap justify-between gap-3">{out}<Link to="/light" className="text-sm underline opacity-60">Open fan lightstick</Link></div>
     </div>
   );
 }

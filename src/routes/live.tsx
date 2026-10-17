@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ParticipationQR } from "@/components/ParticipationQR";
 import LiveFeatures from "@/live/LiveFeatures";
 import { loadPass, mergeAwakening, PASS_EVENT, type FanPass } from "@/lib/fanPass";
 import { useEffect, useState } from "react";
@@ -49,6 +50,7 @@ function Live() {
 
   return (
     <AppShell kicker="Concert mode ◎ tonight only" title="Show night">
+      <ParticipationQR />
       {scanned ? (
         <>
           <div className="rounded-3xl bg-primary p-5 text-primary-foreground pop-sm">
@@ -61,8 +63,8 @@ function Live() {
               <Radio className="h-4 w-4 animate-pulse" /> LIVE · doors open
             </p>
           </div>
-          <Link to="/light" className="mt-4 flex items-center justify-between rounded-2xl bg-foreground p-4 text-background pop-sm press">
-            <span><span className="block font-display text-lg font-extrabold">✦ Live Light</span><span className="block text-sm opacity-80">Turn your phone into tonight's lightstick</span></span>
+          <Link to="/light" search={{ concert: true }} className="mt-4 flex items-center justify-between rounded-2xl bg-foreground p-4 text-background pop-sm press">
+            <span><span className="block font-display text-lg font-extrabold">✦ The Awakening</span><span className="block text-sm opacity-80">Join the music-synced concert lights</span></span>
             <span className="font-bold">Open →</span>
           </Link>
           {features}

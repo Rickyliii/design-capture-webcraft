@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Radio, Sparkles, Star, Sun, Waves, WifiOff, X } from "lucide-react";
+import { ArrowLeft, Radio, Sparkles, Sun, Waves, WifiOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadPass } from "@/lib/fanPass";
 import { markAction } from "@/lib/afterlight";
 import { Button } from "@/components/ui/button";
+import { ConcertStar } from "@/components/ConcertStar";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -12,6 +13,7 @@ import {
 import { changeStarColor, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
+  validateSearch: (search: Record<string, unknown>) => ({ concert: search.concert === true || search.concert === "true" }),
   head: () => ({
     meta: [
       { title: "Live Light — FanDrop" },
@@ -37,6 +39,7 @@ function LightPage() {
   const [fan, setFan] = useState<LightFan | null>(null);
   const [loading, setLoading] = useState(true);
   const [stick, setStick] = useState(false);
+  const [initialMode, setInitialMode] = useState<Mode>("solid");
   const [editColor, setEditColor] = useState(false);
 
   useEffect(() => {
@@ -48,9 +51,9 @@ function LightPage() {
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
   if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
   if (editColor) return <ColorEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
-  if (stick) return <Lightstick fan={fan} onExit={() => setStick(false)} onChangeColor={() => { setStick(false); setEditColor(true); }} />;
-  return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async () => {
-    setStick(true);
+  if (stick) return <Lightstick fan={fan} initialMode={initialMode} onExit={() => setStick(false)} onChangeColor={() => { setStick(false); setEditColor(true); }} />;
+  return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async (sync: boolean) => {
+    setInitialMode(sync ? "sync" : "solid"); setStick(true);
     try { const r = await recordActivity({ data: { fanId: id, kind: "lightstick_activated" } }); setFan(r.fan); } catch {}
   }} />;
 }
@@ -120,11 +123,11 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
           <p className="mt-2 font-mono text-xs opacity-70">{PALETTE[color].label} · joins Team {TEAMS[PALETTE[color].team].label}</p>
         </div>
         <div>
-          <span className="font-bold">Star type</span>
+          <span className="font-bold">Star shape</span>
           <div className="mt-2 grid grid-cols-4 gap-2">
             {STAR_TYPES.map((t) => (
-              <button type="button" key={t} onClick={() => setType(t)} aria-pressed={type === t}
-                className={`rounded-2xl border-2 py-3 text-sm font-bold ${type === t ? "border-background bg-background text-foreground" : "border-background/30"}`}>{t}</button>
+              <Button variant="ghost" type="button" key={t} onClick={() => setType(t)} aria-pressed={type === t}
+                className={`h-24 flex-col gap-2 rounded-md border ${type === t ? "border-background bg-background text-foreground" : "border-background/30"}`}><ConcertStar type={t} className="h-10 w-10" />{t}</Button>
             ))}
           </div>
         </div>
@@ -146,7 +149,7 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
   );
 }
 
-function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: LightFan; fanId: string; setFan: (f: LightFan) => void; onActivate: () => void; onChangeColor: () => void }) {
+function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: LightFan; fanId: string; setFan: (f: LightFan) => void; onActivate: (sync: boolean) => void; onChangeColor: () => void }) {
   const info = colorInfo(fan.star_color);
   const hex = info.hex;
   const [board, setBoard] = useState<Record<Team, { members: number; lights: number }> | null>(null);
@@ -162,21 +165,20 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
       refresh();
     } catch { setNote("Couldn't send — try again."); }
   }
-  const achievements = [
-    ["Star Created", true], ["Lightstick Activated", fan.activated], ["Collective Opening Contributor", fan.light_sent], ["Constellation Challenge Completed", fan.challenge_done],
-  ] as const;
   return (
     <Shell>
       <Link to="/live" className="inline-flex items-center gap-1 font-mono text-xs opacity-70"><ArrowLeft className="h-3 w-3" /> Back to Live</Link>
       <div className="mt-6 rounded-3xl p-6 text-center text-white" style={{ background: `radial-gradient(circle at 50% 35%, ${hex}, #000 85%)` }}>
-        <Star className="mx-auto h-20 w-20 drop-shadow-[0_0_24px_rgba(255,255,255,0.8)]" fill="currentColor" />
+        <ConcertStar type={fan.star_type} className="mx-auto h-24 w-24" />
         <p className="mt-4 font-display text-3xl font-extrabold uppercase">{fan.nickname}'s star</p>
         <p className="mt-1 font-mono text-sm tracking-widest">{info.label.toUpperCase()} {fan.star_type.toUpperCase()} · TEAM {TEAMS[info.team].label.toUpperCase()}</p>
         <p className="mt-3 text-sm opacity-90">You're part of tonight's constellation.</p>
       </div>
-      <button onClick={onActivate} className="mt-5 w-full rounded-full py-5 font-display text-xl font-extrabold text-white" style={{ background: hex, boxShadow: `0 0 40px ${hex}` }}>
-        ACTIVATE MY LIGHT
-      </button>
+      <h2 className="mt-6 font-display text-2xl font-bold">The Awakening</h2>
+      <p className="mt-2 text-sm opacity-80">Concert Sync lets the presenter change this page’s light with the music. It does not control your phone. Choose Solid or EXIT anytime.</p>
+      <p className="mt-2 text-sm opacity-80">加入演唱会模式后，网页灯光会跟随中控；可随时切回纯色或退出。</p>
+      <Button onClick={() => onActivate(true)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Radio /> JOIN CONCERT SYNC</Button>
+      <Button variant="ghost" onClick={() => onActivate(false)} className="mt-3 min-h-12 w-full border border-background/30"><Sun /> MY LIGHT ONLY</Button>
       <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>CHANGE STAR COLOR</Button>
 
       <section className="mt-8">
@@ -200,59 +202,14 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
         <p className="mt-2 font-mono text-[11px] opacity-50">Real counts from fans who joined — nothing simulated.</p>
       </section>
 
-      <ConnectStars done={fan.challenge_done} onComplete={async () => {
-        try { const r = await recordActivity({ data: { fanId, kind: "challenge_completed" } }); setFan(r.fan); } catch {}
-      }} />
-
-      <section className="mt-8">
-        <h2 className="font-display text-2xl font-extrabold">Tonight's achievements</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-2">
-          {achievements.map(([l, ok]) => (
-            <li key={l} className={`rounded-2xl border-2 p-3 text-sm font-bold ${ok ? "" : "opacity-40"}`} style={ok ? { borderColor: hex } : undefined}>{ok ? "✦ " : "○ "}{l}</li>
-          ))}
-        </ul>
-        <p className="mt-2 font-mono text-[11px] opacity-50">Each counts once per show. Sending your light also counts toward Rewards.</p>
-      </section>
     </Shell>
   );
 }
 
-const STARS = [[15, 70], [35, 30], [55, 55], [75, 20], [88, 65]];
-function ConnectStars({ done, onComplete }: { done: boolean; onComplete: () => void }) {
-  const [step, setStep] = useState(0);
-  const [miss, setMiss] = useState(false);
-  const complete = step >= STARS.length;
-  function tap(i: number) {
-    if (complete) return;
-    if (i === step) { setStep(step + 1); setMiss(false); if (step + 1 === STARS.length) onComplete(); }
-    else setMiss(true);
-  }
-  return (
-    <section className="mt-8">
-      <h2 className="font-display text-2xl font-extrabold">Connect the Stars</h2>
-      <p className="text-sm opacity-70">Tap the stars in order, 1 → 5. {done && "Starlight Explorer Badge earned ✦"}</p>
-      <div className="relative mt-3 aspect-[4/3] rounded-3xl bg-background/5">
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {STARS.slice(0, Math.max(0, step)).map((s, i) => i > 0 && (
-            <line key={i} x1={STARS[i - 1]![0]} y1={STARS[i - 1]![1]} x2={s[0]} y2={s[1]} stroke="currentColor" strokeWidth="0.8" />
-          ))}
-        </svg>
-        {STARS.map(([x, y], i) => (
-          <button key={i} onClick={() => tap(i)} aria-label={`Star ${i + 1}`}
-            className={`absolute grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full font-mono text-xs font-bold ${i < step ? "bg-background text-foreground shadow-[0_0_20px_currentColor]" : "border-2 border-background/50"}`}
-            style={{ left: `${x}%`, top: `${y}%` }}>{i + 1}</button>
-        ))}
-      </div>
-      <p className="mt-2 text-center font-mono text-xs">{complete ? "CONSTELLATION COMPLETE." : miss ? `Try star ${step + 1}` : " "}</p>
-      {complete && <button onClick={() => setStep(0)} className="mx-auto mt-1 block text-xs underline opacity-70">Play again</button>}
-    </section>
-  );
-}
-
 type Mode = "solid" | "breathing" | "aurora" | "sync";
-function Lightstick({ fan, onExit, onChangeColor }: { fan: LightFan; onExit: () => void; onChangeColor: () => void }) {
+function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan; initialMode: Mode; onExit: () => void; onChangeColor: () => void }) {
   const ownHex: string = colorInfo(fan.star_color).hex;
-  const [mode, setMode] = useState<Mode>("solid");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [state, setState] = useState<ShowState | null>(null);
   const [status, setStatus] = useState<"connecting" | "live" | "lost">("connecting");
   const [now, setNow] = useState(Date.now());
@@ -339,10 +296,10 @@ function Lightstick({ fan, onExit, onChangeColor }: { fan: LightFan; onExit: () 
         )}
       </div>
       <div className="relative flex flex-1 flex-col items-center justify-center px-6 text-center">
-        <div className="lightstick-star"><Star className="h-44 w-44" fill="currentColor" strokeWidth={0.6} /></div>
+        <div className="lightstick-star"><ConcertStar type={fan.star_type} className="h-44 w-44" /></div>
         {mode === "sync" && status === "lost" && <p className="mt-6 rounded-2xl bg-black/30 px-4 py-2 font-bold">Lost connection. Holding your color — reconnecting.</p>}
         {mode === "sync" && status !== "lost" && waiting && (
-          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO NOVA LIVE</p><p className="text-sm opacity-90">Waiting for the music to begin.</p></div>
+          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO THE AWAKENING</p><p className="text-sm opacity-90">Waiting for the music to begin.</p></div>
         )}
         {message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
