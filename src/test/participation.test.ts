@@ -1,0 +1,11 @@
+import { describe, expect, it } from "vitest";
+import { participationUrl } from "@/lib/participation";
+
+describe("phone participation links", () => {
+  it("keeps participants on the same public site and opens the concert entry", () => {
+    expect(participationUrl("https://fans.example.com")).toBe("https://fans.example.com/light?concert=true");
+  });
+  it("never encodes a laptop-only localhost link in the phone QR", () => {
+    expect(participationUrl("http://localhost:8080")).toBe("https://id-preview--15c6b9b8-81bb-48c4-b62c-acd135fc65d8.lovable.app/light?concert=true");
+  });
+});
