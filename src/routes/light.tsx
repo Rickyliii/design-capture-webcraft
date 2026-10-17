@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Radio, Star, Sun, Waves, WifiOff, X } from "lucide-react";
+import { ArrowLeft, Radio, Sparkles, Star, Sun, Waves, WifiOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadPass } from "@/lib/fanPass";
 import { markAction } from "@/lib/afterlight";
 import {
-  LIGHT_EVENT_ID, STAR_COLORS, STAR_TYPES, displayFor, isStarColor,
-  type ShowState, type StarColor, type StarType,
+  LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
+  type PaletteColor, type ShowState, type StarType, type Team,
 } from "@/lib/light";
 import { getFan, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
@@ -58,7 +58,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) => void }) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState<StarColor>("violet");
+  const [color, setColor] = useState<PaletteColor>("electric_violet");
   const [type, setType] = useState<StarType>("Nova");
   const [first, setFirst] = useState<string>("");
   const [busy, setBusy] = useState(false);
@@ -89,12 +89,13 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
         <div>
           <span className="font-bold">Star color</span>
           <div className="mt-2 grid grid-cols-4 gap-2">
-            {(Object.keys(STAR_COLORS) as StarColor[]).map((c) => (
-              <button type="button" key={c} onClick={() => setColor(c)} aria-pressed={color === c}
-                className={`rounded-2xl py-4 text-sm font-bold text-white ${color === c ? "ring-4 ring-background" : "opacity-70"}`}
-                style={{ background: STAR_COLORS[c].hex }}>{STAR_COLORS[c].label}</button>
+            {PALETTE_IDS.map((c) => (
+              <button type="button" key={c} onClick={() => setColor(c)} aria-pressed={color === c} aria-label={PALETTE[c].label}
+                className={`flex min-h-16 items-end rounded-2xl p-2 text-left text-[11px] font-bold leading-tight text-white transition ${color === c ? "scale-105 ring-4 ring-background" : "opacity-75"}`}
+                style={{ background: PALETTE[c].hex, textShadow: "0 1px 3px rgba(0,0,0,.5)" }}>{PALETTE[c].label}</button>
             ))}
           </div>
+          <p className="mt-2 font-mono text-xs opacity-70">{PALETTE[color].label} · joins Team {TEAMS[PALETTE[color].team].label}</p>
         </div>
         <div>
           <span className="font-bold">Star type</span>
@@ -114,7 +115,7 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
           </div>
         </div>
         {err && <p role="alert" className="text-sm">{err}</p>}
-        <button disabled={busy} className="w-full rounded-full py-4 font-display text-lg font-extrabold text-white" style={{ background: STAR_COLORS[color].hex }}>
+        <button disabled={busy} className="w-full rounded-full py-4 font-display text-lg font-extrabold text-white" style={{ background: PALETTE[color].hex }}>
           {busy ? "Creating…" : "Create my star ✦"}
         </button>
         <p className="text-center font-mono text-[11px] opacity-50">No email, phone or real name needed.</p>
@@ -124,18 +125,18 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
 }
 
 function StarHome({ fan, fanId, setFan, onActivate }: { fan: LightFan; fanId: string; setFan: (f: LightFan) => void; onActivate: () => void }) {
-  const color = isStarColor(fan.star_color) ? fan.star_color : "violet";
-  const hex = STAR_COLORS[color].hex;
-  const [board, setBoard] = useState<Record<StarColor, { members: number; lights: number }> | null>(null);
+  const info = colorInfo(fan.star_color);
+  const hex = info.hex;
+  const [board, setBoard] = useState<Record<Team, { members: number; lights: number }> | null>(null);
   const [note, setNote] = useState("");
-  const refresh = () => getTeamBoard().then((b) => setBoard(b as Record<StarColor, { members: number; lights: number }>)).catch(() => {});
+  const refresh = () => getTeamBoard().then((b) => setBoard(b as Record<Team, { members: number; lights: number }>)).catch(() => {});
   useEffect(() => { refresh(); }, []);
   async function sendLight() {
     try {
       const r = await recordActivity({ data: { fanId, kind: "light_sent" } });
       setFan(r.fan);
       markAction("light");
-      setNote(r.first ? `YOUR LIGHT JOINED TEAM ${STAR_COLORS[color].label.toUpperCase()}.` : "Your light is already in — one per fan.");
+      setNote(r.first ? `YOUR LIGHT JOINED TEAM ${TEAMS[info.team].label.toUpperCase()}.` : "Your light is already in — one per fan.");
       refresh();
     } catch { setNote("Couldn't send — try again."); }
   }
@@ -148,7 +149,7 @@ function StarHome({ fan, fanId, setFan, onActivate }: { fan: LightFan; fanId: st
       <div className="mt-6 rounded-3xl p-6 text-center text-white" style={{ background: `radial-gradient(circle at 50% 35%, ${hex}, #000 85%)` }}>
         <Star className="mx-auto h-20 w-20 drop-shadow-[0_0_24px_rgba(255,255,255,0.8)]" fill="currentColor" />
         <p className="mt-4 font-display text-3xl font-extrabold uppercase">{fan.nickname}'s star</p>
-        <p className="mt-1 font-mono text-sm tracking-widest">{STAR_COLORS[color].label.toUpperCase()} {fan.star_type.toUpperCase()}</p>
+        <p className="mt-1 font-mono text-sm tracking-widest">{info.label.toUpperCase()} {fan.star_type.toUpperCase()} · TEAM {TEAMS[info.team].label.toUpperCase()}</p>
         <p className="mt-3 text-sm opacity-90">You're part of tonight's constellation.</p>
       </div>
       <button onClick={onActivate} className="mt-5 w-full rounded-full py-5 font-display text-xl font-extrabold text-white" style={{ background: hex, boxShadow: `0 0 40px ${hex}` }}>
@@ -163,12 +164,12 @@ function StarHome({ fan, fanId, setFan, onActivate }: { fan: LightFan; fanId: st
         </button>
         {note && <p className="mt-2 text-center font-mono text-xs">{note}</p>}
         <ul className="mt-4 space-y-2">
-          {board && (Object.keys(STAR_COLORS) as StarColor[]).sort((a, b) => board[b].lights - board[a].lights).map((c) => {
+          {board && [...TEAM_IDS].sort((a, b) => board[b].lights - board[a].lights).map((c) => {
             const max = Math.max(1, ...Object.values(board).map((x) => x.lights));
             return (
               <li key={c} className="rounded-2xl border border-background/20 p-3">
-                <div className="flex justify-between text-sm font-bold"><span>TEAM {STAR_COLORS[c].label.toUpperCase()}</span><span className="font-mono">{board[c].lights} lights · {board[c].members} stars</span></div>
-                <div className="mt-2 h-2 rounded-full bg-background/10"><div className="h-2 rounded-full transition-all" style={{ width: `${(board[c].lights / max) * 100}%`, background: STAR_COLORS[c].hex }} /></div>
+                <div className="flex justify-between text-sm font-bold"><span>TEAM {TEAMS[c].label.toUpperCase()}</span><span className="font-mono">{board[c].lights} lights · {board[c].members} stars</span></div>
+                <div className="mt-2 h-2 rounded-full bg-background/10"><div className="h-2 rounded-full transition-all" style={{ width: `${(board[c].lights / max) * 100}%`, background: TEAMS[c].hex }} /></div>
               </li>
             );
           })}
@@ -225,14 +226,14 @@ function ConnectStars({ done, onComplete }: { done: boolean; onComplete: () => v
   );
 }
 
-type Mode = "solid" | "breathing" | "sync";
+type Mode = "solid" | "breathing" | "aurora" | "sync";
 function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
-  const own: StarColor = isStarColor(fan.star_color) ? fan.star_color : "violet";
+  const ownHex: string = colorInfo(fan.star_color).hex;
   const [mode, setMode] = useState<Mode>("solid");
   const [state, setState] = useState<ShowState | null>(null);
   const [status, setStatus] = useState<"connecting" | "live" | "lost">("connecting");
   const [now, setNow] = useState(Date.now());
-  const lastGood = useRef<string>(STAR_COLORS[own].hex);
+  const lastGood = useRef<string>(ownHex);
 
   // Fullscreen + wake lock after the tap that opened this screen.
   useEffect(() => {
@@ -249,17 +250,27 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
     if (mode !== "sync") return;
     setStatus("connecting");
     recordActivity({ data: { fanId: fan.fan_id, kind: "concert_sync_entered" } }).catch(() => {});
-    supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
+    const fetchState = () => supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
+    fetchState();
     const ch = supabase
       .channel(`show-${LIGHT_EVENT_ID}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "show_state", filter: `event_id=eq.${LIGHT_EVENT_ID}` }, (p) => setState(p.new as ShowState))
       .subscribe((s) => {
-        if (s === "SUBSCRIBED") {
-          setStatus("live");
-          supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
-        } else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setStatus("lost");
+        if (s === "SUBSCRIBED") { setStatus("live"); fetchState(); }
+        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setStatus("lost");
       });
-    return () => { supabase.removeChannel(ch); };
+    const bc = supabase.channel(SHOW_BROADCAST_CHANNEL)
+      // A broadcast is only a "wake up" ping: re-read the admin-only table so nobody can spoof colors.
+      .on("broadcast", { event: "state" }, () => fetchState())
+      .subscribe();
+    const poll = setInterval(fetchState, 4000);
+    // Presence: lets Show Control count phones that are actually connected right now.
+    const pres = supabase.channel(PRESENCE_CHANNEL, { config: { presence: { key: fan.fan_id } } });
+    pres.subscribe((s) => { if (s === "SUBSCRIBED") pres.track({ at: Date.now() }).catch(() => {}); });
+    // Safety net: re-read state when the phone wakes or regains focus.
+    const onVis = () => { if (document.visibilityState === "visible") fetchState(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(poll); supabase.removeChannel(ch); supabase.removeChannel(bc); supabase.removeChannel(pres); document.removeEventListener("visibilitychange", onVis); };
   }, [mode, fan.fan_id]);
 
   useEffect(() => {
@@ -268,39 +279,40 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
     return () => clearInterval(t);
   }, [mode, state?.mode]);
 
-  let hex: string = STAR_COLORS[own].hex, breathing = mode === "breathing", message: string | undefined, waiting = false;
+  let hex: string = ownHex, breathing = mode === "breathing", aurora = mode === "aurora", message: string | undefined, waiting = false;
   if (mode === "sync") {
     if (status === "lost") hex = lastGood.current;
     else {
-      const d = displayFor(state, own, now);
-      hex = d.hex; breathing = d.breathing; message = d.message; waiting = !!d.waiting;
+      const d = displayFor(state, fan.star_color, now);
+      hex = d.hex; breathing = d.breathing; aurora = d.aurora; message = d.message; waiting = !!d.waiting;
       lastGood.current = hex;
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col text-white" style={{ background: hex, transition: "background-color 1.2s ease" }}>
+    <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-white" style={{ background: hex, ["--glow" as string]: hex }}>
+      {aurora && <div className="lightstick-aurora pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
-      <div className="relative flex items-center justify-between p-4">
-        <button onClick={onExit} className="flex items-center gap-1 rounded-full bg-black/30 px-4 py-2 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT LIGHTSTICK</button>
+      <div className="relative flex items-center justify-between p-3">
+        <button onClick={onExit} aria-label="Exit lightstick" className="flex min-h-11 items-center gap-1 rounded-full bg-black/35 px-4 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</button>
         {mode === "sync" && (
-          <span className="flex items-center gap-1 rounded-full bg-black/30 px-3 py-2 font-mono text-[11px] backdrop-blur">
-            {status === "live" ? <><Radio className="h-3 w-3 animate-pulse" /> CONNECTED</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> CONNECTION LOST</> : "CONNECTING…"}
+          <span className="flex items-center gap-1 rounded-full bg-black/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
+            {status === "live" ? <><Radio className="h-3 w-3 animate-pulse" /> LIVE</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}
           </span>
         )}
       </div>
       <div className="relative flex flex-1 flex-col items-center justify-center px-6 text-center">
-        <Star className="h-40 w-40 drop-shadow-[0_0_60px_rgba(255,255,255,0.9)]" fill="currentColor" />
-        {mode === "sync" && status === "lost" && <p className="mt-6 font-bold">Lost connection to the show. Holding your color — it'll reconnect.</p>}
+        <div className="lightstick-star"><Star className="h-44 w-44" fill="currentColor" strokeWidth={0.6} /></div>
+        {mode === "sync" && status === "lost" && <p className="mt-6 rounded-2xl bg-black/30 px-4 py-2 font-bold">Lost connection. Holding your color — reconnecting.</p>}
         {mode === "sync" && status !== "lost" && waiting && (
-          <><p className="mt-6 font-display text-2xl font-extrabold">CONNECTED TO LIVE</p><p className="mt-1 opacity-90">Waiting for the opening ceremony.</p></>
+          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO LIVE</p><p className="text-sm opacity-90">Keep this screen open — the show controls your light.</p></div>
         )}
-        {message && <p className="mt-6 font-display text-3xl font-extrabold">{message}</p>}
+        {message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
-      <div className="relative grid grid-cols-3 gap-2 p-4 pb-8">
-        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
+      <div className="relative grid grid-cols-4 gap-2 p-3 pb-6">
+        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["aurora", "Aurora", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
           <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
-            className={`flex flex-col items-center gap-1 rounded-2xl py-3 text-xs font-bold backdrop-blur ${mode === m ? "bg-white/90 text-black" : "bg-black/30"}`}>
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-bold backdrop-blur ${mode === m ? "bg-white/90 text-black" : "bg-black/35"}`}>
             <Icon className="h-5 w-5" />{l}
           </button>
         ))}

@@ -5,9 +5,12 @@ import {
   COMMANDS,
   FIRST_CONCERT,
   LIGHT_EVENT_ID,
-  STAR_COLORS,
+  SHOW_BROADCAST_CHANNEL,
   STAR_TYPES,
+  TEAM_IDS,
+  isHex,
   isStarColor,
+  teamOf,
   stateForCommand,
   type ActivityKind,
   type Command,
@@ -92,9 +95,9 @@ export const recordActivity = createServerFn({ method: "POST" })
 export const getTeamBoard = createServerFn({ method: "GET" }).handler(async () => {
   const db = await admin();
   const { data } = await db.from("light_fans").select("star_color,light_sent").eq("event_id", LIGHT_EVENT_ID);
-  const board = Object.fromEntries(Object.keys(STAR_COLORS).map((c) => [c, { members: 0, lights: 0 }])) as Record<string, { members: number; lights: number }>;
+  const board = Object.fromEntries(TEAM_IDS.map((c) => [c, { members: 0, lights: 0 }])) as Record<string, { members: number; lights: number }>;
   for (const r of data ?? []) {
-    const t = board[r.star_color]; if (!t) continue;
+    const t = board[teamOf(r.star_color)]; if (!t) continue;
     t.members++;
     if (r.light_sent) t.lights++;
   }
@@ -122,7 +125,7 @@ export const getShowStats = createServerFn({ method: "GET" })
     const teams: Record<string, number> = { violet: 0, rose: 0, gold: 0, blue: 0 };
     let activated = 0, lights = 0, challenges = 0;
     for (const f of fans ?? []) {
-      teams[f.star_color] = (teams[f.star_color] ?? 0) + 1;
+      teams[teamOf(f.star_color)] = (teams[teamOf(f.star_color)] ?? 0) + 1;
       if (f.activated) activated++;
       if (f.light_sent) lights++;
       if (f.challenge_done) challenges++;
@@ -132,8 +135,9 @@ export const getShowStats = createServerFn({ method: "GET" })
 
 export const sendShowCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { command: Command }) => {
+  .inputValidator((d: { command: Command; hex?: string | undefined }) => {
     if (!COMMANDS.includes(d?.command)) throw new Error("Unknown command");
+    if (d.command === "custom" && !isHex(d.hex)) throw new Error("Invalid color");
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -141,10 +145,18 @@ export const sendShowCommand = createServerFn({ method: "POST" })
     // Written as the signed-in admin; RLS also requires the admin role.
     const { data: row, error } = await context.supabase
       .from("show_state")
-      .update(stateForCommand(data.command, new Date()))
+      .update(stateForCommand(data.command, new Date(), data.hex))
       .eq("event_id", LIGHT_EVENT_ID)
       .select()
       .single();
     if (error) throw new Error("Command failed");
+    // Push the new state to every phone instantly; phones also watch the table and re-check as backups.
+    try {
+      const db = await admin();
+      const ch: any = db.channel(SHOW_BROADCAST_CHANNEL);
+      if (typeof ch.httpSend === "function") await ch.httpSend("state", row);
+      else await ch.send({ type: "broadcast", event: "state", payload: row });
+      db.removeChannel(ch);
+    } catch (e) { console.error("broadcast failed", e); }
     return row;
   });
