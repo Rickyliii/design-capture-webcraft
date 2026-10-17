@@ -84,7 +84,7 @@ export function MusicShowConsole({ state, onState, send }: {
   const running = state?.mode === "music" && state.is_show_active && cue < 6;
   const visual = musicDisplay(activeTimeline, elapsed, "#38BDF8", "blue");
   return <section className="music-console space-y-5 border-y border-background/20 py-6">
-    <header className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-xs text-primary">THE AWAKENING / 3.0</p><h2 className="mt-1 font-display text-2xl font-bold">MUSIC SHOW</h2></div><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : "STANDBY"}</span></header>
+    <header className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-xs text-primary">THE AWAKENING / 3.0</p><h2 className="mt-1 font-display text-2xl font-bold">MUSIC SHOW</h2></div><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : state?.mode === "awakening" && state.is_show_active ? "OPENING" : "STANDBY"}</span></header>
     <audio ref={audio} onLoadedMetadata={() => setDuration(audio.current?.duration ?? 0)} onTimeUpdate={() => {
       const at = audio.current?.currentTime ?? 0; setPosition(at);
       if (running && !preview && !stored.silent && start !== null && Math.abs(scheduledMusicStart(stored, at, Date.now() + offset.current) - start) > 1000) { setError("Audio timing changed. Lighting stopped to prevent an out-of-sync show."); void stop("AUDIO TIMING — STOP"); }
