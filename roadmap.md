@@ -17,9 +17,9 @@
 
 ## Open (new)
 - [x] Provide the presenter control link on request.
-- [ ] Further simplify presenter controls: prioritize opening, stop and real counts; disclose music/timing/manual tools.
-- [ ] Improve iPhone safe-area light immersion and add manifest-only home-screen support with an explicit installation prompt; no offline cache.
-- [ ] Integrate uploaded 27-second opening on stage, presenter-triggered only, with YOUR LIGHT waiting screen and separate star revisit entry.
+- [x] Further simplify presenter controls: opening/replay and STOP prominent, real counts retained, music/timing/manual tools disclosed; authorized stage and music start/stop checked, narrow layout checked, 27 tests passed.
+- [x] Improve iPhone safe-area light immersion and add manifest-only home-screen support with an explicit installation prompt; no offline cache. Simulated iPhone checks passed; native browser chrome still requires a physical device.
+- [x] Integrate uploaded 27-second opening on stage, presenter-triggered only, with YOUR LIGHT waiting screen and separate star revisit entry; shared playback, completion and replay verified.
 - [x] Saved color and shape edits retain identity/participation and return to the selected light mode; verified persistence after reload. Page/root/body tint stays in step with lighting and has a fullscreen retry. Authorized browser checks passed for shared opening and uploaded music; anonymous preview request returned 401, so guests need a shared preview link or public publication. Native iPhone browser-bar tint remains unverified.
 - [x] Match phone safe-area colors to current lighting; expose opening/replay and simplify presenter view with live counts; verified shared opening, local music upload and color changes in an authorized browser flow. Native iPhone chrome and physical-phone checks remain unverified.
 - [x] English-only Awakening and presenter UI; QR embedded inside Awakening; restored shared gathering/reveal on phones and /stage, then personal animated light. Verified with an authorized presenter, two simulated phones and stage; public access requires publishing or a shared review link.
