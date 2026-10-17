@@ -20,7 +20,7 @@ export const Route = createFileRoute("/rewards")({
 
 const ICONS = [[Ticket, Award, Sparkles, Gift], [Star, Sparkles, Gift, Vote], [Award, MessageCircle, Sparkles, Gift], [Award, Ticket, Gift, MessageCircle]];
 const rewards = STAGES.flatMap((s, i) =>
-  s.perks.map((name, j) => ({ name, stage: s.n, Icon: ICONS[i][j], ...(i === 0 && j === 0 ? { to: "/pass" as const, cta: "View pass" } : {}) })),
+  s.perks.map((name, j) => ({ name, stage: s.n, Icon: ICONS[i]?.[j] ?? Gift, ...(i === 0 && j === 0 ? { to: "/pass" as const, cta: "View pass" } : {}) })),
 ) as { name: string; stage: number; Icon: typeof Ticket; to?: "/pass"; cta?: string }[];
 
 const activities: { id: ActionId; title: string; why: string }[] = [
