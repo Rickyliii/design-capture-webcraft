@@ -1,4 +1,5 @@
 // FanDrop Live Light — shared, pure helpers (safe for browser + server).
+import { musicDisplay, validateTimeline, type MusicTimeline } from "./music-show";
 export const LIGHT_EVENT_ID = "jb-toronto-2026-10-20";
 
 export const TEAMS = {
@@ -63,6 +64,7 @@ export type ShowState = {
   sequence_start_time: string | null;
   is_show_active: boolean;
   updated_at: string;
+  music_timeline?: unknown;
 };
 
 /** The Awakening: 20s total, one shared start timestamp. */
@@ -76,7 +78,7 @@ export function awakeningPhase(elapsedSec: number): Team | "own" | "done" {
   return "done";
 }
 
-export type Display = { hex: string; breathing: boolean; aurora: boolean; message?: string; waiting?: boolean };
+export type Display = { hex: string; breathing: boolean; aurora: boolean; message?: string; waiting?: boolean; halo?: boolean };
 
 /** What a synced phone should show for a given show state. */
 export function displayFor(state: ShowState | null, own: string, nowMs: number): Display {
@@ -84,6 +86,13 @@ export function displayFor(state: ShowState | null, own: string, nowMs: number):
   const off = { breathing: false, aurora: false };
   if (!state || !state.is_show_active) return { hex: mine, ...off, waiting: true };
   switch (state.mode) {
+    case "music": {
+      let timeline: MusicTimeline;
+      try { timeline = validateTimeline(state.music_timeline); } catch { return { hex: mine, ...off, waiting: true }; }
+      const start = state.sequence_start_time ? Date.parse(state.sequence_start_time) : NaN;
+      if (!Number.isFinite(start)) return { hex: mine, ...off, waiting: true };
+      return musicDisplay(timeline, (nowMs - start) / 1000, mine, teamOf(own));
+    }
     case "color": {
       const g = state.global_color;
       const hex = isHex(g) ? g : g && g in TEAMS ? TEAMS[g as Team].hex : mine;

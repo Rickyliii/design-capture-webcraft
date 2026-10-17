@@ -1,0 +1,2 @@
+ALTER TABLE public.show_state ADD COLUMN IF NOT EXISTS music_timeline jsonb;
+COMMENT ON COLUMN public.show_state.music_timeline IS 'Validated shared music cue configuration; audio remains local to presenter.';

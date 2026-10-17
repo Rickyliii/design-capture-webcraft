@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { validateTimeline, type MusicTimeline } from "./music-show";
 import {
   ACTIVITY_KINDS,
   COMMANDS,
@@ -114,6 +115,36 @@ export const amIAdmin = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     return data === true;
+  });
+
+/** Public clock only: no private show or fan data. */
+export const getShowClock = createServerFn({ method: "GET" }).handler(() => Date.now());
+
+export const startMusicShow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { timeline: MusicTimeline; scheduledStart: number }) => {
+    const timeline = validateTimeline(d?.timeline);
+    if (!Number.isFinite(d?.scheduledStart)) throw new Error("Invalid start time");
+    return { timeline, scheduledStart: d.scheduledStart };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const now = Date.now();
+    if (data.scheduledStart < now + 500 || data.scheduledStart > now + 30000) throw new Error("Start arrived too late. Stop and try again with a longer preparation time.");
+    const { data: row, error } = await context.supabase.from("show_state").update({
+      mode: "music", global_color: null, is_show_active: true,
+      sequence_name: data.timeline.sequenceId,
+      sequence_start_time: new Date(data.scheduledStart).toISOString(),
+      updated_at: new Date(now).toISOString(), music_timeline: data.timeline,
+    }).eq("event_id", LIGHT_EVENT_ID).select().single();
+    if (error) throw new Error("Could not start the music show");
+    try {
+      const db = await admin();
+      const channel = db.channel(SHOW_BROADCAST_CHANNEL);
+      await channel.httpSend("state", { updated_at: row.updated_at });
+      await db.removeChannel(channel);
+    } catch { console.error("Music show ping failed; phones will re-read the stored timeline."); }
+    return row;
   });
 
 export const getShowStats = createServerFn({ method: "GET" })

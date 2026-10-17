@@ -8,7 +8,7 @@ import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
 } from "@/lib/light";
-import { getFan, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
+import { getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
   head: () => ({
@@ -234,6 +234,7 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
   const [status, setStatus] = useState<"connecting" | "live" | "lost">("connecting");
   const [now, setNow] = useState(Date.now());
   const lastGood = useRef<string>(ownHex);
+  const clockOffset = useRef(0);
 
   // Fullscreen + wake lock after the tap that opened this screen.
   useEffect(() => {
@@ -250,11 +251,22 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
     if (mode !== "sync") return;
     setStatus("connecting");
     recordActivity({ data: { fanId: fan.fan_id, kind: "concert_sync_entered" } }).catch(() => {});
-    const fetchState = () => supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
+    let active = true;
+    const calibrate = async () => {
+      const before = Date.now();
+      try { const server = await getShowClock(); const after = Date.now(); if (active) clockOffset.current = server - (before + after) / 2; } catch {}
+    };
+    void calibrate();
+    const clockPoll = setInterval(calibrate, 30000);
+    const fetchState = () => supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data, error }) => {
+      if (!active) return;
+      if (error) { setStatus("lost"); return; }
+      if (data) { setState(previous => previous && Date.parse(previous.updated_at) > Date.parse(data.updated_at) ? previous : data as ShowState); setNow(Date.now() + clockOffset.current); setStatus("live"); }
+    });
     fetchState();
     const ch = supabase
       .channel(`show-${LIGHT_EVENT_ID}-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "show_state", filter: `event_id=eq.${LIGHT_EVENT_ID}` }, (p) => setState(p.new as ShowState))
+      .on("postgres_changes", { event: "*", schema: "public", table: "show_state", filter: `event_id=eq.${LIGHT_EVENT_ID}` }, () => fetchState())
       .subscribe((s) => {
         if (s === "SUBSCRIBED") { setStatus("live"); fetchState(); }
         else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setStatus("lost");
@@ -268,20 +280,21 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
     const pres = supabase.channel(PRESENCE_CHANNEL, { config: { presence: { key: fan.fan_id } } });
     pres.subscribe((s) => { if (s === "SUBSCRIBED") pres.track({ at: Date.now() }).catch(() => {}); });
     // Safety net: re-read state when the phone wakes or regains focus.
-    const onVis = () => { if (document.visibilityState === "visible") fetchState(); };
+    const onVis = () => { if (document.visibilityState === "visible") { void calibrate(); fetchState(); } };
     document.addEventListener("visibilitychange", onVis);
-    return () => { clearInterval(poll); supabase.removeChannel(ch); supabase.removeChannel(bc); supabase.removeChannel(pres); document.removeEventListener("visibilitychange", onVis); };
+    return () => { active = false; clearInterval(clockPoll); clearInterval(poll); supabase.removeChannel(ch); supabase.removeChannel(bc); supabase.removeChannel(pres); document.removeEventListener("visibilitychange", onVis); };
   }, [mode, fan.fan_id]);
 
   useEffect(() => {
-    if (mode !== "sync" || state?.mode !== "awakening") return;
-    const t = setInterval(() => setNow(Date.now()), 200);
+    if (mode !== "sync" || (state?.mode !== "awakening" && state?.mode !== "music")) return;
+    setNow(Date.now() + clockOffset.current);
+    const t = setInterval(() => setNow(Date.now() + clockOffset.current), 100);
     return () => clearInterval(t);
   }, [mode, state?.mode]);
 
   let hex: string = ownHex, breathing = mode === "breathing", aurora = mode === "aurora", message: string | undefined, waiting = false;
   if (mode === "sync") {
-    if (status === "lost") hex = lastGood.current;
+    if (status === "lost" && state?.mode !== "music") hex = lastGood.current;
     else {
       const d = displayFor(state, fan.star_color, now);
       hex = d.hex; breathing = d.breathing; aurora = d.aurora; message = d.message; waiting = !!d.waiting;
@@ -305,7 +318,7 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
         <div className="lightstick-star"><Star className="h-44 w-44" fill="currentColor" strokeWidth={0.6} /></div>
         {mode === "sync" && status === "lost" && <p className="mt-6 rounded-2xl bg-black/30 px-4 py-2 font-bold">Lost connection. Holding your color — reconnecting.</p>}
         {mode === "sync" && status !== "lost" && waiting && (
-          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO LIVE</p><p className="text-sm opacity-90">Keep this screen open — the show controls your light.</p></div>
+          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO NOVA LIVE</p><p className="text-sm opacity-90">Waiting for the music to begin.</p></div>
         )}
         {message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
