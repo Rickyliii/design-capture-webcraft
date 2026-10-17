@@ -22,14 +22,15 @@ export function MusicShowConsole({ state, onState, send }: {
   const [silentStart, setSilentStart] = useState<number | null>(null);
   const [now, setNow] = useState(0);
   const offset = useRef(0);
+  const operation = useRef(0);
   const startShow = useServerFn(startMusicShow);
   const clock = useServerFn(getShowClock);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now() + offset.current), 100);
-    return () => { clearInterval(timer); if (url.current) URL.revokeObjectURL(url.current); };
+    return () => { operation.current++; audio.current?.pause(); clearInterval(timer); if (url.current) URL.revokeObjectURL(url.current); };
   }, []);
   useEffect(() => {
-    if (state && (state.mode !== "music" || !state.is_show_active)) { audio.current?.pause(); setSilentStart(null); }
+    if (state && (state.mode !== "music" || !state.is_show_active)) { operation.current++; audio.current?.pause(); setSilentStart(null); setPreview(false); }
   }, [state?.updated_at]);
   function selectFile(f?: File) {
     if (!f) return;
@@ -40,6 +41,7 @@ export function MusicShowConsole({ state, onState, send }: {
     if (audio.current) { audio.current.src = url.current; audio.current.load(); }
   }
   async function begin(isPreview: boolean) {
+    const token = ++operation.current;
     setError("");
     let t: MusicTimeline;
     try { t = validateTimeline({ ...timeline, version: timeline.version + 1 }); }
@@ -50,19 +52,27 @@ export function MusicShowConsole({ state, onState, send }: {
     setBusy(true); setPreview(isPreview);
     try {
       // play() is invoked before any network await, directly from the presenter's tap.
+      if (a) a.pause();
       if (!t.silent && a) { a.currentTime = t.audioOffset; await a.play(); }
+      if (token !== operation.current) return;
       const before = Date.now(); const server = await clock(); const after = Date.now();
       offset.current = server - (before + after) / 2;
+      if (token !== operation.current) return;
       const measured = Date.now() + offset.current;
       const start = t.silent ? measured + t.lead * 1000 : scheduledMusicStart(t, a?.currentTime ?? 0, measured);
       if (!t.silent && a?.paused) throw new Error("Audio did not begin. The shared show was not started.");
       setTimeline(t); setSilentStart(start);
-      if (!isPreview) onState(await startShow({ data: { timeline: t, scheduledStart: start } }) as ShowState);
+      if (!isPreview) {
+        const row = await startShow({ data: { timeline: t, scheduledStart: start } }) as ShowState;
+        if (token !== operation.current) { await send("stop", "CANCELLED START — STOP"); return; }
+        onState(row);
+      }
     } catch (e) {
       a?.pause(); setSilentStart(null); setError((e as Error).message || "Music could not start.");
     } finally { setBusy(false); }
   }
   async function stop(label = "STOP MUSIC SHOW") {
+    operation.current++;
     audio.current?.pause(); setSilentStart(null); setPreview(false);
     await send("stop", label);
   }
@@ -71,10 +81,14 @@ export function MusicShowConsole({ state, onState, send }: {
   const activeTimeline = preview ? timeline : stored;
   const elapsed = start === null ? -1 : (now - start) / 1000;
   const cue = musicCue(activeTimeline, elapsed);
+  const running = state?.mode === "music" && state.is_show_active && cue < 6;
   const visual = musicDisplay(activeTimeline, elapsed, "#38BDF8", "blue");
   return <section className="music-console space-y-5 border-y border-background/20 py-6">
     <header className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-xs text-primary">THE AWAKENING / 3.0</p><h2 className="mt-1 font-display text-2xl font-bold">NOVA — MUSIC SHOW CONTROL</h2></div><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : "STANDBY"}</span></header>
-    <audio ref={audio} onLoadedMetadata={() => setDuration(audio.current?.duration ?? 0)} onTimeUpdate={() => setPosition(audio.current?.currentTime ?? 0)} onError={() => { setError("This audio file could not be played. Select another MP3 or WAV."); if (state?.mode === "music") void stop("AUDIO ERROR — STOP"); }} onEnded={() => { if (state?.mode === "music" && elapsed < stored.duration) { setError("Music ended early. Lighting stopped."); void stop("AUDIO ENDED — STOP"); } }} />
+    <audio ref={audio} onLoadedMetadata={() => setDuration(audio.current?.duration ?? 0)} onTimeUpdate={() => {
+      const at = audio.current?.currentTime ?? 0; setPosition(at);
+      if (running && !preview && !stored.silent && start !== null && Math.abs(scheduledMusicStart(stored, at, Date.now() + offset.current) - start) > 1000) { setError("Audio timing changed. Lighting stopped to prevent an out-of-sync show."); void stop("AUDIO TIMING — STOP"); }
+    }} onWaiting={() => { if (running && !preview && !stored.silent) { setError("Audio paused to buffer. Lighting stopped; restart when ready."); void stop("AUDIO BUFFERING — STOP"); } }} onError={() => { setError("This audio file could not be played. Select another MP3 or WAV."); if (state?.mode === "music") void stop("AUDIO ERROR — STOP"); }} onEnded={() => { if (state?.mode === "music" && elapsed < stored.duration) { setError("Music ended early. Lighting stopped."); void stop("AUDIO ENDED — STOP"); } }} />
     <div className="flex flex-wrap items-center gap-4"><label className="inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-md border border-background/30 px-4 font-bold"><Upload size={18} /> UPLOAD MUSIC<input type="file" accept="audio/mpeg,audio/wav,.mp3,.wav" className="sr-only" onChange={e => selectFile(e.target.files?.[0])} disabled={busy || (state?.mode === "music" && cue < 6 && state.is_show_active)} /></label><div className="min-w-0 flex-1"><p className="break-all font-bold">{file || "No local track selected"}</p><p className="font-mono text-xs opacity-60">{position.toFixed(1)}s / {duration.toFixed(1)}s · PRESENTER AUDIO ONLY</p></div><Music2 className="text-primary" /></div>
     <label className="flex items-center gap-3 font-mono text-sm"><input type="checkbox" checked={timeline.silent} onChange={e => setTimeline({ ...timeline, silent: e.target.checked })} /> SILENT DEMO MODE</label>
     <div className="grid grid-cols-2 gap-3 md:grid-cols-5">{([
@@ -82,7 +96,7 @@ export function MusicShowConsole({ state, onState, send }: {
     ] as const).map(([label, key, min, max]) => <label key={key} className="text-xs opacity-90">{label}<input type="number" min={min} max={max} step={key === "bpm" ? 1 : 0.1} value={timeline[key]} onChange={e => setTimeline({ ...timeline, [key]: Number(e.target.value) })} className="mt-2 w-full rounded-md border border-background/25 bg-transparent p-3 font-mono text-base" /></label>)}</div>
     <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="font-mono text-xs opacity-60"><tr><th className="py-3">LIGHTING CUE</th><th>START / SECONDS</th></tr></thead><tbody>{CUE_NAMES.map((name, i) => <tr key={name} className={`border-t border-background/15 ${cue === i && start !== null ? "text-primary" : ""}`}><td className="py-3 font-bold"><span className="mr-3 font-mono opacity-50">0{i + 1}</span>{name}</td><td><input aria-label={`${name} start seconds`} type="number" min={0} max={timeline.duration} step={0.1} disabled={i === 0} value={timeline.cues[i]} onChange={e => setTimeline({ ...timeline, cues: timeline.cues.map((n, j) => j === i ? Number(e.target.value) : n) })} className="w-24 rounded-md border border-background/25 bg-transparent p-2 font-mono" /></td></tr>)}</tbody></table></div>
     <div className="flex items-center gap-3 border-y border-background/20 py-4"><span className="music-preview h-10 w-10 shrink-0 rounded-full" style={{ "--preview-light": visual.hex } as React.CSSProperties} /><p className="font-mono text-xs">{start === null ? "NO ACTIVE CUE" : cue < 0 ? `PREPARING · ${Math.max(0, -elapsed).toFixed(1)}s` : cue === 6 ? "YOU ARE THE AFTERLIGHT." : `${CUE_NAMES[cue]} · ${elapsed.toFixed(1)}s`}</p></div>
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Button className="min-h-14 whitespace-normal" disabled={busy} onClick={() => begin(false)}><Play />START MUSIC SHOW</Button><Button variant="ghost" className="min-h-14 whitespace-normal border border-background/30" disabled={busy} onClick={() => begin(true)}><Play />PREVIEW MUSIC + LIGHTS</Button><Button variant="destructive" className="min-h-14" onClick={() => stop()}><Square />STOP MUSIC SHOW</Button><Button variant="ghost" className="min-h-14 whitespace-normal border border-background/30" onClick={() => { audio.current?.pause(); setSilentStart(null); void send("team", "EMERGENCY STATIC MODE"); }}><Shield />EMERGENCY STATIC MODE</Button><Button variant="ghost" className="min-h-12 whitespace-normal border border-background/30" onClick={() => { audio.current?.pause(); void send("team", "RESTORE PERSONAL COLORS"); }}>RESTORE PERSONAL COLORS</Button><Button variant="ghost" className="min-h-12 border border-background/30" onClick={() => { void stop("RESET DEMO STATE"); if (audio.current) audio.current.currentTime = 0; setPosition(0); }}><RotateCcw />RESET DEMO STATE</Button></div>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Button className="min-h-14 whitespace-normal" disabled={busy || running} onClick={() => begin(false)}><Play />START MUSIC SHOW</Button><Button variant="ghost" className="min-h-14 whitespace-normal border border-background/30" disabled={busy || running} onClick={() => begin(true)}><Play />PREVIEW MUSIC + LIGHTS</Button><Button variant="destructive" className="min-h-14" onClick={() => stop()}><Square />STOP MUSIC SHOW</Button><Button variant="ghost" className="min-h-14 whitespace-normal border border-background/30" onClick={() => { operation.current++; audio.current?.pause(); setSilentStart(null); void send("team", "EMERGENCY STATIC MODE"); }}><Shield />EMERGENCY STATIC MODE</Button><Button variant="ghost" className="min-h-12 whitespace-normal border border-background/30" onClick={() => { operation.current++; audio.current?.pause(); void send("team", "RESTORE PERSONAL COLORS"); }}>RESTORE PERSONAL COLORS</Button><Button variant="ghost" className="min-h-12 border border-background/30" onClick={() => { void stop("RESET DEMO STATE"); if (audio.current) audio.current.currentTime = 0; setPosition(0); }}><RotateCcw />RESET DEMO STATE</Button></div>
     {error && <p role="alert" className="border-l-2 border-destructive pl-3 text-sm">{error}</p>}
   </section>;
 }
