@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { validateTimeline, type MusicTimeline } from "./music-show";
+import { starColorUpdate } from "./star-color";
 import {
   ACTIVITY_KINDS,
   COMMANDS,
@@ -30,6 +31,19 @@ export type LightFan = {
   challenge_done: boolean;
 };
 const FAN_COLS = "fan_id,nickname,star_color,star_type,activated,light_sent,challenge_done";
+
+export const changeStarColor = createServerFn({ method: "POST" })
+  .inputValidator((d: { fanId: string; color: string }) => {
+    if (!fanIdOk(d?.fanId)) throw new Error("Invalid fan id");
+    return { fanId: d.fanId, patch: starColorUpdate(d.color) };
+  })
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: row, error } = await db.from("light_fans").update(data.patch)
+      .eq("event_id", LIGHT_EVENT_ID).eq("fan_id", data.fanId).select(FAN_COLS).single();
+    if (error) throw new Error("Could not save your color");
+    return row as LightFan;
+  });
 
 export const getFan = createServerFn({ method: "POST" })
   .inputValidator((d: { fanId: string }) => {

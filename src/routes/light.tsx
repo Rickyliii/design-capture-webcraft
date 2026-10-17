@@ -4,11 +4,12 @@ import { ArrowLeft, Radio, Sparkles, Star, Sun, Waves, WifiOff, X } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { loadPass } from "@/lib/fanPass";
 import { markAction } from "@/lib/afterlight";
+import { Button } from "@/components/ui/button";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
 } from "@/lib/light";
-import { getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
+import { changeStarColor, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
   head: () => ({
@@ -36,6 +37,7 @@ function LightPage() {
   const [fan, setFan] = useState<LightFan | null>(null);
   const [loading, setLoading] = useState(true);
   const [stick, setStick] = useState(false);
+  const [editColor, setEditColor] = useState(false);
 
   useEffect(() => {
     const fid = fanId();
@@ -45,8 +47,9 @@ function LightPage() {
 
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
   if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
-  if (stick) return <Lightstick fan={fan} onExit={() => setStick(false)} />;
-  return <StarHome fan={fan} fanId={id} setFan={setFan} onActivate={async () => {
+  if (editColor) return <ColorEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
+  if (stick) return <Lightstick fan={fan} onExit={() => setStick(false)} onChangeColor={() => { setStick(false); setEditColor(true); }} />;
+  return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async () => {
     setStick(true);
     try { const r = await recordActivity({ data: { fanId: id, kind: "lightstick_activated" } }); setFan(r.fan); } catch {}
   }} />;
@@ -54,6 +57,25 @@ function LightPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return <div className="min-h-screen bg-foreground px-5 py-8 text-background"><div className="mx-auto max-w-md">{children}</div></div>;
+}
+
+function ColorEditor({ fan, onCancel, onSave }: { fan: LightFan; onCancel: () => void; onSave: (fan: LightFan) => void }) {
+  const [color, setColor] = useState<PaletteColor>(colorInfo(fan.star_color).id);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function save() {
+    setBusy(true); setError("");
+    try { onSave(await changeStarColor({ data: { fanId: fan.fan_id, color } })); }
+    catch { setError("Couldn't save your color. Please try again."); }
+    finally { setBusy(false); }
+  }
+  return <Shell><Button variant="ghost" className="border border-background/30" disabled={busy} onClick={onCancel}><ArrowLeft />Back to my star</Button>
+    <h1 className="mt-8 font-display text-3xl font-bold">Choose your star color</h1>
+    <div className="mt-6 grid grid-cols-2 gap-3">{PALETTE_IDS.map(c => <Button key={c} variant="ghost" className={`min-h-20 whitespace-normal border border-background/30 ${color === c ? "bg-background text-foreground" : ""}`} aria-label={PALETTE[c].label} aria-pressed={color === c} disabled={busy} onClick={() => setColor(c)}><span className={`star-swatch star-swatch-${c}`} aria-hidden="true" />{PALETTE[c].label}</Button>)}</div>
+    <p className="mt-4 font-mono text-sm">{PALETTE[color].label} · Team {TEAMS[PALETTE[color].team].label}</p>
+    <Button className="mt-6 min-h-14 w-full" disabled={busy} onClick={save}>{busy ? "Saving…" : "SAVE COLOR"}</Button>
+    {error && <p role="alert" className="mt-3">{error}</p>}
+  </Shell>;
 }
 
 function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) => void }) {
@@ -124,7 +146,7 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
   );
 }
 
-function StarHome({ fan, fanId, setFan, onActivate }: { fan: LightFan; fanId: string; setFan: (f: LightFan) => void; onActivate: () => void }) {
+function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: LightFan; fanId: string; setFan: (f: LightFan) => void; onActivate: () => void; onChangeColor: () => void }) {
   const info = colorInfo(fan.star_color);
   const hex = info.hex;
   const [board, setBoard] = useState<Record<Team, { members: number; lights: number }> | null>(null);
@@ -155,6 +177,7 @@ function StarHome({ fan, fanId, setFan, onActivate }: { fan: LightFan; fanId: st
       <button onClick={onActivate} className="mt-5 w-full rounded-full py-5 font-display text-xl font-extrabold text-white" style={{ background: hex, boxShadow: `0 0 40px ${hex}` }}>
         ACTIVATE MY LIGHT
       </button>
+      <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>CHANGE STAR COLOR</Button>
 
       <section className="mt-8">
         <h2 className="font-display text-2xl font-extrabold">Star Battle</h2>
@@ -227,7 +250,7 @@ function ConnectStars({ done, onComplete }: { done: boolean; onComplete: () => v
 }
 
 type Mode = "solid" | "breathing" | "aurora" | "sync";
-function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
+function Lightstick({ fan, onExit, onChangeColor }: { fan: LightFan; onExit: () => void; onChangeColor: () => void }) {
   const ownHex: string = colorInfo(fan.star_color).hex;
   const [mode, setMode] = useState<Mode>("solid");
   const [state, setState] = useState<ShowState | null>(null);
@@ -308,6 +331,7 @@ function Lightstick({ fan, onExit }: { fan: LightFan; onExit: () => void }) {
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
       <div className="relative flex items-center justify-between p-3">
         <button onClick={onExit} aria-label="Exit lightstick" className="flex min-h-11 items-center gap-1 rounded-full bg-black/35 px-4 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</button>
+        <Button variant="ghost" className="min-h-11 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>CHANGE COLOR</Button>
         {mode === "sync" && (
           <span className="flex items-center gap-1 rounded-full bg-black/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
             {status === "live" ? <><Radio className="h-3 w-3 animate-pulse" /> LIVE</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}
