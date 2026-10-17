@@ -16,6 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
+- [x] English-only Awakening and presenter UI; QR embedded inside Awakening; restored shared gathering/reveal on phones and /stage, then personal animated light. Verified with an authorized presenter, two simulated phones and stage; public access requires publishing or a shared review link.
 - [x] Connect Live The Awakening to phone participation, add QR/link, clarify explicit Concert Sync consent, refresh star shapes, simplify presenter controls and remove unused challenge/achievements.
 - [x] Activated lightstick and Star Home offer saved personal color changes without re-registration; explain presenter/phone setup
 - [x] Awakening 3.0 Phase A implementation: local presenter music, editable cues, shared scheduled timeline, static/STOP/reset safety, clock calibration

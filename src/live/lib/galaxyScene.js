@@ -2,7 +2,8 @@ import * as THREE from 'three';
 
 // One GPU point cloud and one GPU trail batch, not individual star objects.
 const vertex = `
-uniform float uTime, uSequence, uRatio, uReduced;
+uniform float uTime, uSequence, uRatio, uReduced, uPersonal;
+uniform vec3 uPersonalColor;
 attribute float aSeed, aFamily, aSize;
 varying vec3 vColor;
 varying float vAlpha, vFamily;
@@ -21,7 +22,7 @@ void main(){
  vec4 mv=modelViewMatrix*vec4(p,1.);
  gl_Position=projectionMatrix*mv;
  float awake=t<0.?1.:smoothstep(aSeed*7.,aSeed*7.+2.5,t);
- vAlpha=awake*(.35+aSeed*.65);vColor=family(aFamily);vFamily=aFamily;
+ vAlpha=awake*(.35+aSeed*.65);vColor=uPersonal>.5?uPersonalColor:family(aFamily);vFamily=aFamily;
  gl_PointSize=clamp(aSize*uRatio*230./max(10.,-mv.z),1.,46.);
 }`;
 const fragment=`
@@ -85,7 +86,7 @@ export function createGalaxy(host,readState,onFailure){
   seeds[i]=random(i,25.19);families[i]=i%4;sizes[i]=1.4+Math.pow(random(i,54.31),5)*7;
  }
  geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));geometry.setAttribute('aFamily',new THREE.BufferAttribute(families,1));geometry.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
- const uniforms={uTime:{value:0},uSequence:{value:-1},uRatio:{value:1},uReduced:{value:0}};
+ const uniforms={uTime:{value:0},uSequence:{value:-1},uRatio:{value:1},uReduced:{value:0},uPersonal:{value:0},uPersonalColor:{value:new THREE.Color()}};
  const material=new THREE.ShaderMaterial({uniforms,vertexShader:vertex,fragmentShader:fragment,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
  const points=new THREE.Points(geometry,material);points.frustumCulled=false;scene.add(points);
  const streams=mobile?24:42,segments=100;
@@ -102,7 +103,8 @@ export function createGalaxy(host,readState,onFailure){
  const core=new THREE.Mesh(planeGeo,coreMat);core.scale.set(110,110,1);core.position.z=20;scene.add(core);
  // The visitor's light has its own halo, then moves into the central formation.
  const personalGeo=new THREE.BufferGeometry();personalGeo.setAttribute('position',new THREE.Float32BufferAttribute([0,0,0],3));personalGeo.setAttribute('aSeed',new THREE.Float32BufferAttribute([.02],1));personalGeo.setAttribute('aFamily',new THREE.Float32BufferAttribute([0],1));personalGeo.setAttribute('aSize',new THREE.Float32BufferAttribute([19],1));
- const personal=new THREE.Points(personalGeo,material);personal.frustumCulled=false;scene.add(personal);
+ const personalMaterial=material.clone();personalMaterial.uniforms={...uniforms,uPersonal:{value:1},uPersonalColor:{value:new THREE.Color()}};
+ const personal=new THREE.Points(personalGeo,personalMaterial);personal.frustumCulled=false;scene.add(personal);
  renderer.setClearColor(0x06060c,1);renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.25:1.5));host.appendChild(renderer.domElement);
  const resize=()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();uniforms.uRatio.value=renderer.getPixelRatio();};
  const observer=new ResizeObserver(resize);observer.observe(host);resize();
@@ -121,12 +123,11 @@ export function createGalaxy(host,readState,onFailure){
   const travel=t<0?0:THREE.MathUtils.smoothstep(t,5,12);
   camera.position.set(state.reduced?0:Math.sin(clock*.075)*3, state.reduced?0:Math.cos(clock*.06)*1.5,145-travel*45);
   camera.lookAt(0,0,0);
-  const family=state.color==='#b6a0ef'?2:state.color==='#e7acac'?1:state.color==='#a3cef0'?3:0;
-  personalGeo.attributes.aFamily.array[0]=family;personalGeo.attributes.aFamily.needsUpdate=true;
+  personalMaterial.uniforms.uPersonalColor.value.set(state.color);
   personal.visible=t<5;personal.position.set(t<0?18:0,t<0?8:0,40);
   trails.visible=!state.reduced&&t>=10&&t<25;
   renderer.render(scene,camera);
  }
  frame=requestAnimationFrame(draw);
- return()=>{dead=true;cancelAnimationFrame(frame);observer.disconnect();renderer.domElement.removeEventListener('webglcontextlost',lost);geometry.dispose();trailGeometry.dispose();planeGeo.dispose();personalGeo.dispose();material.dispose();trailMaterial.dispose();hazeMat.dispose();coreMat.dispose();renderer.dispose();renderer.domElement.remove();};
+ return()=>{dead=true;cancelAnimationFrame(frame);observer.disconnect();renderer.domElement.removeEventListener('webglcontextlost',lost);geometry.dispose();trailGeometry.dispose();planeGeo.dispose();personalGeo.dispose();material.dispose();personalMaterial.dispose();trailMaterial.dispose();hazeMat.dispose();coreMat.dispose();renderer.dispose();renderer.domElement.remove();};
 }

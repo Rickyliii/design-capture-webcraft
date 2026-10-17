@@ -16,9 +16,8 @@ export function ParticipationQR() {
         {url && <QRCodeSVG value={url} size={168} marginSize={2} title="Scan to join The Awakening" />}
       </div>
       <div className="min-w-0 flex-1 basis-52 space-y-3">
-        <p>Scan on your phone · 扫码参与</p>
+        <p>Scan on your phone</p>
         <p className="text-sm opacity-80">Create your star, then tap JOIN CONCERT SYNC. Only this page’s light follows the show. Exit or choose Solid anytime.</p>
-        <p className="text-sm opacity-80">建立 Star 后，点 JOIN CONCERT SYNC；仅网页灯光跟随演出，可随时退出。</p>
         {url && <a href={url} className="block break-all font-mono text-xs underline">{url}</a>}
         <Button variant="secondary" disabled={!url} onClick={async () => {
           try { await navigator.clipboard.writeText(url); setCopied(true); setError(""); }
