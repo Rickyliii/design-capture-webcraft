@@ -17,7 +17,7 @@ describe("live light", () => {
     expect(colorInfo("violet").hex).toBe("#8B5CF6");
   });
   it("awakening returns to personal afterlight at 22 seconds", () => {
-    expect([1, 3, 5, 8, 10, 21.999, 22].map(awakeningPhase)).toEqual(["own", "violet", "blue", "gold", "own", "own", "done"]);
+    expect([1, 5, 8, 10, 16, 21.999, 22].map(awakeningPhase)).toEqual(["own", "violet", "blue", "gold", "own", "own", "done"]);
   });
   it("ALL GOLD turns every phone gold", () => {
     expect(displayFor(run("gold"), "lavender", Date.now()).hex).toBe(TEAMS.gold.hex);
