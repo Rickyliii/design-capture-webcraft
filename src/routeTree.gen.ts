@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LightRouteImport } from './routes/light'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as PassRouteImport } from './routes/pass'
+import { Route as RewardsRouteImport } from './routes/rewards'
+import { Route as ShowControlRouteImport } from './routes/show-control'
+import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as PassMemoryEventIdRouteImport } from './routes/pass_.memory.$eventId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LightRoute = LightRouteImport.update({
+  id: '/light',
+  path: '/light',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassRoute = PassRouteImport.update({
+  id: '/pass',
+  path: '/pass',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowControlRoute = ShowControlRouteImport.update({
+  id: '/show-control',
+  path: '/show-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketsRoute = TicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassMemoryEventIdRoute = PassMemoryEventIdRouteImport.update({
+  id: '/pass_/memory/$eventId',
+  path: '/pass/memory/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/light': typeof LightRoute
+  '/live': typeof LiveRoute
+  '/messages': typeof MessagesRoute
+  '/pass': typeof PassRoute
+  '/rewards': typeof RewardsRoute
+  '/show-control': typeof ShowControlRoute
+  '/tickets': typeof TicketsRoute
+  '/pass/memory/$eventId': typeof PassMemoryEventIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/light': typeof LightRoute
+  '/live': typeof LiveRoute
+  '/messages': typeof MessagesRoute
+  '/pass': typeof PassRoute
+  '/rewards': typeof RewardsRoute
+  '/show-control': typeof ShowControlRoute
+  '/tickets': typeof TicketsRoute
+  '/pass/memory/$eventId': typeof PassMemoryEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/light': typeof LightRoute
+  '/live': typeof LiveRoute
+  '/messages': typeof MessagesRoute
+  '/pass': typeof PassRoute
+  '/rewards': typeof RewardsRoute
+  '/show-control': typeof ShowControlRoute
+  '/tickets': typeof TicketsRoute
+  '/pass_/memory/$eventId': typeof PassMemoryEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/light'
+    | '/live'
+    | '/messages'
+    | '/pass'
+    | '/rewards'
+    | '/show-control'
+    | '/tickets'
+    | '/pass/memory/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/light'
+    | '/live'
+    | '/messages'
+    | '/pass'
+    | '/rewards'
+    | '/show-control'
+    | '/tickets'
+    | '/pass/memory/$eventId'
+  id:
+    | '__root__'
+    | '/'
+    | '/light'
+    | '/live'
+    | '/messages'
+    | '/pass'
+    | '/rewards'
+    | '/show-control'
+    | '/tickets'
+    | '/pass_/memory/$eventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LightRoute: typeof LightRoute
+  LiveRoute: typeof LiveRoute
+  MessagesRoute: typeof MessagesRoute
+  PassRoute: typeof PassRoute
+  RewardsRoute: typeof RewardsRoute
+  ShowControlRoute: typeof ShowControlRoute
+  TicketsRoute: typeof TicketsRoute
+  PassMemoryEventIdRoute: typeof PassMemoryEventIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/light': {
+      id: '/light'
+      path: '/light'
+      fullPath: '/light'
+      preLoaderRoute: typeof LightRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pass': {
+      id: '/pass'
+      path: '/pass'
+      fullPath: '/pass'
+      preLoaderRoute: typeof PassRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/show-control': {
+      id: '/show-control'
+      path: '/show-control'
+      fullPath: '/show-control'
+      preLoaderRoute: typeof ShowControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tickets': {
+      id: '/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof TicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pass_/memory/$eventId': {
+      id: '/pass_/memory/$eventId'
+      path: '/pass/memory/$eventId'
+      fullPath: '/pass/memory/$eventId'
+      preLoaderRoute: typeof PassMemoryEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LightRoute: LightRoute,
+  LiveRoute: LiveRoute,
+  MessagesRoute: MessagesRoute,
+  PassRoute: PassRoute,
+  RewardsRoute: RewardsRoute,
+  ShowControlRoute: ShowControlRoute,
+  TicketsRoute: TicketsRoute,
+  PassMemoryEventIdRoute: PassMemoryEventIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
