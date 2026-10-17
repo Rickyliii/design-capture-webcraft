@@ -86,6 +86,7 @@ export type Database = {
           global_color: string | null
           is_show_active: boolean
           mode: string
+          music_timeline: Json | null
           sequence_name: string | null
           sequence_start_time: string | null
           updated_at: string
@@ -95,6 +96,7 @@ export type Database = {
           global_color?: string | null
           is_show_active?: boolean
           mode?: string
+          music_timeline?: Json | null
           sequence_name?: string | null
           sequence_start_time?: string | null
           updated_at?: string
@@ -104,6 +106,7 @@ export type Database = {
           global_color?: string | null
           is_show_active?: boolean
           mode?: string
+          music_timeline?: Json | null
           sequence_name?: string | null
           sequence_start_time?: string | null
           updated_at?: string
