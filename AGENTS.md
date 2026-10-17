@@ -12,3 +12,4 @@
 - Show Control commands: server function writes show_state (admin-only) then sends a broadcast ping; phones re-read the table on ping, on table change, and every 4s. Why: database change events were not reaching phones in testing, and broadcast payloads can be spoofed by anyone.
 - Music shows store validated cue configuration and a shared start timestamp in show_state; devices interpolate locally using a server-calibrated clock. Why: late joins recover the same phase without frame-by-frame network commands.
 - Presenter audio stays in a local object URL, starts on an explicit tap, and anchors the shared timeline to actual audio position with a preparation lead; preview never writes shared state. Why: autoplay restrictions and local copyright boundaries must not compromise synchronization.
+- Personal color edits use a color-only server update on the existing fan row, never re-registration. Why: changing colors must retain identity and participation flags.
