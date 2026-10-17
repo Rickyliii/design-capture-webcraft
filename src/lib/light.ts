@@ -67,14 +67,16 @@ export type ShowState = {
   music_timeline?: unknown;
 };
 
-/** The uploaded opening: 27s total, one shared start timestamp. */
-export const AWAKENING_LENGTH = 27;
+/** Presentation opening duration, anchored to one shared start timestamp. */
+export const AWAKENING_LENGTH = 15;
 export function awakeningPhase(elapsedSec: number): Team | "own" | "done" {
+  if (elapsedSec >= AWAKENING_LENGTH) return "done";
+  elapsedSec = elapsedSec * 27 / AWAKENING_LENGTH;
   if (elapsedSec < 4) return "own";
   if (elapsedSec < 8) return "violet";
   if (elapsedSec < 12) return "blue";
   if (elapsedSec < 16) return "gold";
-  if (elapsedSec < AWAKENING_LENGTH) return "own";
+  if (elapsedSec < 27) return "own";
   return "done";
 }
 

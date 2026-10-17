@@ -16,6 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
+- [ ] Shorten the presentation opening from 27 to 15 seconds, preserving all phases and PLAY/STOP/REPLAY.
 - [x] Split stage opening into separate PLAY, STOP and REPLAY controls, retaining OPEN STAGE SCREEN; verified stage play, replay restart and stop-to-waiting in an authorized browser.
 - [x] Provide the presenter control link on request.
 - [x] Further simplify presenter controls: opening/replay and STOP prominent, real counts retained, music/timing/manual tools disclosed; authorized stage and music start/stop checked, narrow layout checked, 27 tests passed.
