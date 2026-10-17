@@ -18,16 +18,10 @@ export const Route = createFileRoute("/rewards")({
   component: Rewards,
 });
 
-const rewards = [
-  { name: "Personalized Digital Fan Pass", stage: 1, Icon: Ticket, to: "/pass" as const, cta: "View pass" },
-  { name: "Toronto Digital Collectible", stage: 1, Icon: Gift },
-  { name: "Opening Contributor Badge", stage: 2, Icon: Award },
-  { name: "Personalized Star Memory", stage: 2, Icon: Star },
-  { name: "Exclusive Artist Drop", stage: 3, Icon: Sparkles },
-  { name: "Fan-Only Artist Decision", stage: 3, Icon: Vote },
-  { name: "Inner Circle Q&A", stage: 4, Icon: MessageCircle },
-  { name: "Limited experience draws (when available)", stage: 4, Icon: Gift },
-];
+const ICONS = [[Ticket, Award, Sparkles, Gift], [Star, Sparkles, Gift, Vote], [Award, MessageCircle, Sparkles, Gift], [Award, Ticket, Gift, MessageCircle]];
+const rewards = STAGES.flatMap((s, i) =>
+  s.perks.map((name, j) => ({ name, stage: s.n, Icon: ICONS[i][j], ...(i === 0 && j === 0 ? { to: "/pass" as const, cta: "View pass" } : {}) })),
+) as { name: string; stage: number; Icon: typeof Ticket; to?: "/pass"; cta?: string }[];
 
 const activities: { id: ActionId; title: string; why: string }[] = [
   { id: "pass", title: "Create your Fan Pass", why: "Your spark — the start of every journey." },
@@ -54,7 +48,7 @@ function Rewards() {
   const next = STAGES[stage];
   const prevNeed = cur?.need ?? 0;
   const pct = next ? Math.min(100, Math.round(((energy - prevNeed) / Math.max(1, next.need - prevNeed)) * 100)) : 100;
-  const nextAction = next && !done.includes(next.requires) ? activities.find((a) => a.id === next.requires) : null;
+  const nextAction = stage === 0 ? activities[0] : null;
 
   return (
     <AppShell kicker="Fan Rewards ✦ Afterlight" title="The Afterlight Journey">
@@ -71,12 +65,10 @@ function Rewards() {
           <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
         </div>
         <p className="mt-3 text-sm">
-          {next ? (
-            <>
-              <span className="opacity-60">Next: </span>
-              {nextAction ? `${nextAction.title}` : `Reach ${next.need} Energy`}
-              {nextAction && energy < next.need ? ` + reach ${next.need} Energy` : ""} to unlock {next.name}.
-            </>
+          {nextAction ? (
+            <><span className="opacity-60">Next: </span>{nextAction.title} to join as The Spark.</>
+          ) : next ? (
+            <><span className="opacity-60">Next: </span>{(next.need - energy).toLocaleString()} more Energy to unlock {next.name}.</>
           ) : "Inner Circle reached ✦"}
         </p>
       </section>
@@ -98,8 +90,12 @@ function Rewards() {
                   <p className="font-display text-lg font-extrabold">{s.name}</p>
                   <span className="sticker ml-auto opacity-70">Stage {s.n}</span>
                 </div>
-                <p className="text-sm opacity-80">{s.desc}</p>
-                <p className="mt-1 text-xs font-bold">{complete || active ? "Unlocked ✦" : `Unlock: ${s.unlock}`}</p>
+                <p className="mt-1 font-mono text-[11px] font-bold opacity-80">{s.range} · {s.theme}</p>
+                <p className="mt-1 text-sm opacity-80">{s.desc}</p>
+                <ul className="mt-2 space-y-0.5 text-xs">
+                  {s.perks.map((p) => <li key={p}>✦ {p}</li>)}
+                </ul>
+                <p className="mt-2 text-xs font-bold">{complete || active ? "Unlocked ✦" : `Unlocks at ${s.need.toLocaleString()} Energy`}</p>
               </li>
             );
           })}
