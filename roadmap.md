@@ -16,7 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
-- [ ] Allow saved star color and shape edits without re-registration; investigate screenshot's browser-color mismatch and anonymous QR entry; reconfirm presenter opening.
+- [x] Saved color and shape edits retain identity/participation and return to the selected light mode; verified persistence after reload. Page/root/body tint stays in step with lighting and has a fullscreen retry. Authorized browser checks passed for shared opening and uploaded music; anonymous preview request returned 401, so guests need a shared preview link or public publication. Native iPhone browser-bar tint remains unverified.
 - [x] Match phone safe-area colors to current lighting; expose opening/replay and simplify presenter view with live counts; verified shared opening, local music upload and color changes in an authorized browser flow. Native iPhone chrome and physical-phone checks remain unverified.
 - [x] English-only Awakening and presenter UI; QR embedded inside Awakening; restored shared gathering/reveal on phones and /stage, then personal animated light. Verified with an authorized presenter, two simulated phones and stage; public access requires publishing or a shared review link.
 - [x] Connect Live The Awakening to phone participation, add QR/link, clarify explicit Concert Sync consent, refresh star shapes, simplify presenter controls and remove unused challenge/achievements.
