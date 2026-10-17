@@ -126,7 +126,11 @@
 .star-swatch-amber { --swatch: var(--star-amber); }
 .music-preview { background: var(--preview-light); transition: background-color .1s linear; }
 .music-console { letter-spacing: 0; }
-.lightstick { transition: background-color 1.2s ease; }
+html[data-concert-light], html[data-concert-light] body { background: var(--concert-light); overscroll-behavior: none; }
+.lightstick { background: var(--concert-light); height: 100dvh; width: 100%; }
+.lightstick-header { padding-top: max(.75rem, env(safe-area-inset-top)); padding-left: max(.75rem, env(safe-area-inset-left)); padding-right: max(.75rem, env(safe-area-inset-right)); }
+.lightstick-modes { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+.opening-loading { background: var(--foreground); color: var(--background); }
 .lightstick-star { color: #fff; filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 90px var(--glow)); animation: star-float 6s ease-in-out infinite; }
 @keyframes star-float { 0%,100% { transform: translateY(4px) scale(1) } 50% { transform: translateY(-6px) scale(1.03) } }
 .lightstick-aurora {

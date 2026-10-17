@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConcertStar } from "@/components/ConcertStar";
 import { OpeningScene } from "@/components/OpeningScene";
 import { openingFrame } from "@/lib/opening";
+import { useLightSurface } from "@/hooks/use-light-surface";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/light")({
   validateSearch: (search: Record<string, unknown>): { concert?: boolean } => ({ concert: search["concert"] === true || search["concert"] === "true" }),
   head: () => ({
     meta: [
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Live Light — FanDrop" },
       { name: "description", content: "Your Light. Your Moment. Our Show. Turn your phone into a synced concert lightstick." },
       { property: "og:title", content: "Live Light — FanDrop" },
@@ -285,13 +287,14 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
 
   const opening = openingFrame(state, now);
   const showOpening = mode === "sync" && opening.visible;
+  useLightSurface(showOpening ? getOpeningSurface() : hex);
   return (
-    <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-white" style={{ background: hex, ["--glow" as string]: hex }}>
+    <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-background" style={{ ["--glow" as string]: hex }}>
       {aurora && <div className="lightstick-aurora pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
       {showOpening && <OpeningScene frame={opening} color={ownHex} />}
-      <div className="relative z-10 flex items-center justify-between p-3">
-        <button onClick={onExit} aria-label="Exit lightstick" className="flex min-h-11 items-center gap-1 rounded-full bg-black/35 px-4 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</button>
+      <div className="lightstick-header relative z-10 flex items-center justify-between gap-2 p-3">
+        <Button variant="ghost" onClick={onExit} aria-label="Exit lightstick" className="min-h-11 bg-foreground/35 px-3 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</Button>
         <Button variant="ghost" className="min-h-11 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>CHANGE COLOR</Button>
         {mode === "sync" && (
           <span className="flex items-center gap-1 rounded-full bg-black/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
@@ -307,14 +310,18 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         )}
         {!showOpening && message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
-      <div className="relative grid grid-cols-4 gap-2 p-3 pb-6">
+      <div className="lightstick-modes relative grid grid-cols-4 gap-2 p-3">
         {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["aurora", "Aurora", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
-          <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
-            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-bold backdrop-blur ${mode === m ? "bg-white/90 text-black" : "bg-black/35"}`}>
+          <Button variant="ghost" key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
+            className={`h-14 min-w-0 flex-col gap-1 px-1 text-[11px] font-bold backdrop-blur ${mode === m ? "bg-background/90 text-foreground" : "bg-foreground/35"}`}>
             <Icon className="h-5 w-5" />{l}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
   );
+}
+
+function getOpeningSurface() {
+  return getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim();
 }
