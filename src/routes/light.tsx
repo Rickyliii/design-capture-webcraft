@@ -287,7 +287,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
 
   const opening = openingFrame(state, now);
   const showOpening = mode === "sync" && opening.visible;
-  useLightSurface(showOpening ? getOpeningSurface() : hex);
+  useLightSurface(showOpening ? "var(--foreground)" : hex);
   return (
     <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-background" style={{ ["--glow" as string]: hex }}>
       {aurora && <div className="lightstick-aurora pointer-events-none absolute inset-0" />}
@@ -322,6 +322,3 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
   );
 }
 
-function getOpeningSurface() {
-  return getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim();
-}

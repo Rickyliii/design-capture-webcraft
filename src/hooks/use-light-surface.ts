@@ -7,12 +7,13 @@ export function useLightSurface(color: string) {
     const previous = root.style.getPropertyValue("--concert-light");
     const hadAttribute = root.hasAttribute("data-concert-light");
     root.setAttribute("data-concert-light", "");
-    root.style.setProperty("--concert-light", color);
+    const resolved = color.startsWith("var(") ? getComputedStyle(root).getPropertyValue(color.slice(4, -1)).trim() : color;
+    root.style.setProperty("--concert-light", resolved);
     const existing = Array.from(document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'));
     const saved = existing.map(meta => meta.content);
     const metas = existing.length ? existing : [document.createElement("meta")];
     if (!existing.length) { metas[0]?.setAttribute("name", "theme-color"); if (metas[0]) document.head.appendChild(metas[0]); }
-    metas.forEach(meta => { meta.content = color; });
+    metas.forEach(meta => { meta.content = resolved; });
     return () => {
       if (previous) root.style.setProperty("--concert-light", previous); else root.style.removeProperty("--concert-light");
       if (!hadAttribute) root.removeAttribute("data-concert-light");
