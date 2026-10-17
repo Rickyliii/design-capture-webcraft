@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ParticipationQR } from "@/components/ParticipationQR";
 import LiveFeatures from "@/live/LiveFeatures";
 import { loadPass, mergeAwakening, PASS_EVENT, type FanPass } from "@/lib/fanPass";
 import { useEffect, useState } from "react";
@@ -50,7 +49,6 @@ function Live() {
 
   return (
     <AppShell kicker="Concert mode ◎ tonight only" title="Show night">
-      <ParticipationQR />
       {scanned ? (
         <>
           <div className="rounded-3xl bg-primary p-5 text-primary-foreground pop-sm">

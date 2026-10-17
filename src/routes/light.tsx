@@ -6,6 +6,8 @@ import { loadPass } from "@/lib/fanPass";
 import { markAction } from "@/lib/afterlight";
 import { Button } from "@/components/ui/button";
 import { ConcertStar } from "@/components/ConcertStar";
+import { OpeningScene } from "@/components/OpeningScene";
+import { openingFrame } from "@/lib/opening";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -176,7 +178,6 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
       </div>
       <h2 className="mt-6 font-display text-2xl font-bold">The Awakening</h2>
       <p className="mt-2 text-sm opacity-80">Concert Sync lets the presenter change this page’s light with the music. It does not control your phone. Choose Solid or EXIT anytime.</p>
-      <p className="mt-2 text-sm opacity-80">加入演唱会模式后，网页灯光会跟随中控；可随时切回纯色或退出。</p>
       <Button onClick={() => onActivate(true)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Radio /> JOIN CONCERT SYNC</Button>
       <Button variant="ghost" onClick={() => onActivate(false)} className="mt-3 min-h-12 w-full border border-background/30"><Sun /> MY LIGHT ONLY</Button>
       <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>CHANGE STAR COLOR</Button>
@@ -282,11 +283,14 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
     }
   }
 
+  const opening = openingFrame(state, now);
+  const showOpening = mode === "sync" && opening.visible;
   return (
     <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-white" style={{ background: hex, ["--glow" as string]: hex }}>
       {aurora && <div className="lightstick-aurora pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
-      <div className="relative flex items-center justify-between p-3">
+      {showOpening && <OpeningScene frame={opening} color={ownHex} />}
+      <div className="relative z-10 flex items-center justify-between p-3">
         <button onClick={onExit} aria-label="Exit lightstick" className="flex min-h-11 items-center gap-1 rounded-full bg-black/35 px-4 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</button>
         <Button variant="ghost" className="min-h-11 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>CHANGE COLOR</Button>
         {mode === "sync" && (
@@ -296,12 +300,12 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         )}
       </div>
       <div className="relative flex flex-1 flex-col items-center justify-center px-6 text-center">
-        <div className="lightstick-star"><ConcertStar type={fan.star_type} className="h-44 w-44" /></div>
+        {!showOpening && <div className="lightstick-star"><ConcertStar type={fan.star_type} className="h-44 w-44" /></div>}
         {mode === "sync" && status === "lost" && <p className="mt-6 rounded-2xl bg-black/30 px-4 py-2 font-bold">Lost connection. Holding your color — reconnecting.</p>}
         {mode === "sync" && status !== "lost" && waiting && (
           <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO THE AWAKENING</p><p className="text-sm opacity-90">Waiting for the music to begin.</p></div>
         )}
-        {message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
+        {!showOpening && message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
       <div className="relative grid grid-cols-4 gap-2 p-3 pb-6">
         {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["aurora", "Aurora", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (

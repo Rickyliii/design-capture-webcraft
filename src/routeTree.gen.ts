@@ -16,6 +16,7 @@ import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as ShowControlRouteImport } from './routes/show-control'
+import { Route as StageRouteImport } from './routes/stage'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as PassMemoryEventIdRouteImport } from './routes/pass_.memory.$eventId'
 
@@ -54,6 +55,11 @@ const ShowControlRoute = ShowControlRouteImport.update({
   path: '/show-control',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StageRoute = StageRouteImport.update({
+  id: '/stage',
+  path: '/stage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TicketsRoute = TicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/pass': typeof PassRoute
   '/rewards': typeof RewardsRoute
   '/show-control': typeof ShowControlRoute
+  '/stage': typeof StageRoute
   '/tickets': typeof TicketsRoute
   '/pass/memory/$eventId': typeof PassMemoryEventIdRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/pass': typeof PassRoute
   '/rewards': typeof RewardsRoute
   '/show-control': typeof ShowControlRoute
+  '/stage': typeof StageRoute
   '/tickets': typeof TicketsRoute
   '/pass/memory/$eventId': typeof PassMemoryEventIdRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/pass': typeof PassRoute
   '/rewards': typeof RewardsRoute
   '/show-control': typeof ShowControlRoute
+  '/stage': typeof StageRoute
   '/tickets': typeof TicketsRoute
   '/pass_/memory/$eventId': typeof PassMemoryEventIdRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/rewards'
     | '/show-control'
+    | '/stage'
     | '/tickets'
     | '/pass/memory/$eventId'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/rewards'
     | '/show-control'
+    | '/stage'
     | '/tickets'
     | '/pass/memory/$eventId'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/rewards'
     | '/show-control'
+    | '/stage'
     | '/tickets'
     | '/pass_/memory/$eventId'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   PassRoute: typeof PassRoute
   RewardsRoute: typeof RewardsRoute
   ShowControlRoute: typeof ShowControlRoute
+  StageRoute: typeof StageRoute
   TicketsRoute: typeof TicketsRoute
   PassMemoryEventIdRoute: typeof PassMemoryEventIdRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowControlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stage': {
+      id: '/stage'
+      path: '/stage'
+      fullPath: '/stage'
+      preLoaderRoute: typeof StageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tickets': {
       id: '/tickets'
       path: '/tickets'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   PassRoute: PassRoute,
   RewardsRoute: RewardsRoute,
   ShowControlRoute: ShowControlRoute,
+  StageRoute: StageRoute,
   TicketsRoute: TicketsRoute,
   PassMemoryEventIdRoute: PassMemoryEventIdRoute,
 }

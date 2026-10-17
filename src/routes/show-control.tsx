@@ -34,7 +34,8 @@ function ShowControl() {
       <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-3xl font-extrabold md:text-4xl">FANDROP LIVE — THE AWAKENING</h1>
         <p className="font-mono text-xs opacity-60">Justin Bieber · Scotiabank Arena · event {LIGHT_EVENT_ID}</p>
-        <ParticipationQR />
+        <details className="mt-6 border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Participant QR code</summary><ParticipationQR /></details>
+        <Link to="/stage" target="_blank" className="mt-4 inline-block font-bold underline">OPEN STAGE SCREEN ↗</Link>
         {session === undefined ? null : session ? <Panel session={session} /> : <SignIn />}
       </div>
     </div>
@@ -147,7 +148,7 @@ function Panel({ session }: { session: Session }) {
         Last command: {last ? `${last.ok ? "✓" : "✕"} ${last.text}` : "none yet this session"}
       </p>
 
-      <details className="border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Manual lighting · 手动灯光</summary><div className="mt-4 space-y-6">
+      <details className="border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Manual lighting</summary><div className="mt-4 space-y-6">
       <section>
         <h2 className="sticker mb-2 opacity-70">Whole-crowd color</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
