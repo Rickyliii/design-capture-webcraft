@@ -16,10 +16,10 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
-- [ ] Connect Live The Awakening to phone participation, add QR/link, clarify explicit Concert Sync consent, refresh star shapes, simplify presenter controls and remove unused challenge/achievements.
+- [x] Connect Live The Awakening to phone participation, add QR/link, clarify explicit Concert Sync consent, refresh star shapes, simplify presenter controls and remove unused challenge/achievements.
 - [x] Activated lightstick and Star Home offer saved personal color changes without re-registration; explain presenter/phone setup
 - [x] Awakening 3.0 Phase A implementation: local presenter music, editable cues, shared scheduled timeline, static/STOP/reset safety, clock calibration
-- [ ] Awakening 3.0 Phase A authorized end-to-end and two-phone verification — blocked: no presenter account exists; user must sign up and confirm email before managed testing access can be minted
+- [x] Awakening 3.0 Phase A authorized end-to-end: presenter upload/start/stop verified with two simulated phones showing the same music lighting; participants can select Solid or exit.
 - [ ] Real-phone music synchronization check — blocked: requires two physical phones and presenter-selected final audio
 - Phase B/C from Awakening 3.0 await Phase A approval; do not start them automatically
 - [x] Rewards: 4 stage names, tap to see rewards
