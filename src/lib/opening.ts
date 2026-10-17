@@ -24,7 +24,7 @@ export function openingFrame(state: ShowState | null, now: number) {
     const to = timeline.cues[index + 1] ?? end;
     seconds = (stops[index] ?? 0) + (elapsed - from) / (to - from) * ((stops[index + 1] ?? 27) - (stops[index] ?? 0));
   } else if (state.mode === "awakening") {
-    // Preserve the uploaded renderer's 27-second choreography while playing it in 15 seconds.
+    // Preserve the uploaded renderer's 27-second choreography while playing it in 22 seconds.
     seconds = elapsed * 27 / AWAKENING_LENGTH;
     if (elapsed >= AWAKENING_LENGTH) return { visible: false, seconds: 27, playbackSeconds: AWAKENING_LENGTH, durationSeconds, phase: "reveal", complete: true };
   } else return idle;

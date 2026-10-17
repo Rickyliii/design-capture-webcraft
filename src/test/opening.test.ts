@@ -5,11 +5,11 @@ import type { ShowState } from "@/lib/light";
 const start = Date.parse("2026-10-17T22:00:00Z");
 const state: ShowState = { event_id: "test", mode: "music", global_color: null, sequence_name: null, sequence_start_time: new Date(start).toISOString(), is_show_active: true, updated_at: new Date(start).toISOString(), music_timeline: DEFAULT_TIMELINE };
 describe("shared opening choreography", () => {
-  it("presenter opening runs all five uploaded phases for exactly 15 seconds", () => {
+  it("presenter opening runs all five uploaded phases for exactly 22 seconds", () => {
     const opening = { ...state, mode: "awakening", music_timeline: null };
-    expect([0, 3, 7, 11, 13].map(s => openingFrame(opening, start + s * 1000).phase)).toEqual(["darkness", "awakening", "convergence", "supernova", "reveal"]);
-    expect(openingFrame(opening, start + 14999).visible).toBe(true);
-    expect(openingFrame(opening, start + 15000)).toMatchObject({ visible: false, complete: true, playbackSeconds: 15, durationSeconds: 15 });
+    expect([0, 7, 12, 16.5, 19].map(s => openingFrame(opening, start + s * 1000).phase)).toEqual(["darkness", "awakening", "convergence", "supernova", "reveal"]);
+    expect(openingFrame(opening, start + 21999).visible).toBe(true);
+    expect(openingFrame(opening, start + 22000)).toMatchObject({ visible: false, complete: true, playbackSeconds: 22, durationSeconds: 22 });
   });
   it("waits until presenter start and never animates a stopped show", () => {
     expect(openingFrame(state, start - 1).visible).toBe(false);
