@@ -12,4 +12,9 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Pre-bundle UI deps used by lazily-visited pages so Vite never re-optimizes mid-session
+    // (a mid-session re-optimize loads two React copies → "Cannot read properties of null (reading 'useRef')").
+    optimizeDeps: { include: ["@radix-ui/react-dialog"] },
+  },
 });
