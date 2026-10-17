@@ -16,6 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
+- [ ] Further simplify presenter controls: prioritize opening, stop and real counts; disclose music/timing/manual tools.
 - [ ] Improve iPhone safe-area light immersion and add manifest-only home-screen support with an explicit installation prompt; no offline cache.
 - [ ] Integrate uploaded 27-second opening on stage, presenter-triggered only, with YOUR LIGHT waiting screen and separate star revisit entry.
 - [x] Saved color and shape edits retain identity/participation and return to the selected light mode; verified persistence after reload. Page/root/body tint stays in step with lighting and has a fullscreen retry. Authorized browser checks passed for shared opening and uploaded music; anonymous preview request returned 401, so guests need a shared preview link or public publication. Native iPhone browser-bar tint remains unverified.
