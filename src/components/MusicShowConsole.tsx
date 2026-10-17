@@ -91,7 +91,7 @@ export function MusicShowConsole({ state, onState, send }: {
   const visual = musicDisplay(activeTimeline, elapsed, "#38BDF8", "blue");
   const opening = openingFrame(state, now);
   return <section className="music-console space-y-5 border-y border-background/20 py-6">
-    <header className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-2xl font-bold">Stage opening</h2><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : opening.visible ? `OPENING · ${Math.floor(opening.seconds ?? 0)} / 27s` : opening.complete ? "COMPLETE" : "STANDBY"}</span></header>
+    <header className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-2xl font-bold">Stage opening</h2><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : opening.visible ? `OPENING · ${Math.floor(opening.playbackSeconds)} / ${opening.durationSeconds}s` : opening.complete ? "COMPLETE" : "STANDBY"}</span></header>
     <div className="grid grid-cols-3 gap-3"><Button className="min-h-16" disabled={busy} onClick={() => playOpening()}><Play />PLAY</Button><Button variant="destructive" className="min-h-16" onClick={() => stop()}><Square />STOP</Button><Button variant="secondary" className="min-h-16" disabled={busy} onClick={() => playOpening(true)}><RotateCcw />REPLAY</Button></div>
     <audio ref={audio} onLoadedMetadata={() => setDuration(audio.current?.duration ?? 0)} onTimeUpdate={() => {
       const at = audio.current?.currentTime ?? 0; setPosition(at);

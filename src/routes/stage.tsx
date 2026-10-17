@@ -22,7 +22,7 @@ function Stage() {
   return <main className="relative h-dvh overflow-hidden bg-foreground text-background">
     <OpeningScene frame={frame} color={colorInfo("solar_gold").hex} />
     <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-4 p-5">
-      <p className="font-mono text-xs">FANDROP · THE AWAKENING · {frame.visible ? `${Math.floor(frame.seconds ?? 0).toString().padStart(2, "0")} / 27 SECONDS` : frame.complete ? "AFTERLIGHT" : "WAITING FOR PRESENTER"}</p>
+      <p className="font-mono text-xs">FANDROP · THE AWAKENING · {frame.visible ? `${Math.floor(frame.playbackSeconds).toString().padStart(2, "0")} / ${frame.durationSeconds} SECONDS` : frame.complete ? "AFTERLIGHT" : "WAITING FOR PRESENTER"}</p>
       <div className="flex gap-2"><Button variant="secondary" size="icon" aria-label="Fullscreen stage" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}><Maximize /></Button><Button variant="secondary" size="icon" asChild><Link to="/live" aria-label="Exit stage"><X /></Link></Button></div>
     </div>
   </main>;
