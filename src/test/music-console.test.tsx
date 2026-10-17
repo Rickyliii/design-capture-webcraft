@@ -47,7 +47,7 @@ describe("presenter music safety", () => {
   it("opening replay sends the shared opening command without requiring music", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "PLAY / REPLAY OPENING" }));
+    fireEvent.click(screen.getByRole("button", { name: "START / REPLAY STAGE ANIMATION · 27s" }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "START OPENING ANIMATION"));
     expect(calls.start).not.toHaveBeenCalled();
   });

@@ -67,8 +67,8 @@ export type ShowState = {
   music_timeline?: unknown;
 };
 
-/** The Awakening: 20s total, one shared start timestamp. */
-export const AWAKENING_LENGTH = 20;
+/** The uploaded opening: 27s total, one shared start timestamp. */
+export const AWAKENING_LENGTH = 27;
 export function awakeningPhase(elapsedSec: number): Team | "own" | "done" {
   if (elapsedSec < 4) return "own";
   if (elapsedSec < 8) return "violet";
