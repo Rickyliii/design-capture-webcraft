@@ -105,6 +105,8 @@
 @utility animate-breathe { animation: breathe 3.5s ease-in-out infinite; }
 
 /* Lightstick: premium full-screen glow */
+.music-preview { background: var(--preview-light); transition: background-color .1s linear; }
+.music-console { letter-spacing: 0; }
 .lightstick { transition: background-color 1.2s ease; }
 .lightstick-star { color: #fff; filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 90px var(--glow)); animation: star-float 6s ease-in-out infinite; }
 @keyframes star-float { 0%,100% { transform: translateY(4px) scale(1) } 50% { transform: translateY(-6px) scale(1.03) } }

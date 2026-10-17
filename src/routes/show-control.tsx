@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { LIGHT_EVENT_ID, PRESENCE_CHANNEL, TEAMS, TEAM_IDS, isHex, type Command, type ShowState } from "@/lib/light";
 import { amIAdmin, getShowStats, sendShowCommand } from "@/lib/light.functions";
+import { MusicShowConsole } from "@/components/MusicShowConsole";
 
 export const Route = createFileRoute("/show-control")({
   head: () => ({
@@ -30,7 +31,7 @@ function ShowControl() {
   return (
     <div className="min-h-screen bg-foreground p-5 text-background">
       <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-3xl font-extrabold md:text-4xl">NOVA — LIVE SHOW CONTROL</h1>
+        <h1 className="font-display text-3xl font-extrabold md:text-4xl">FANDROP LIVE — THE AWAKENING</h1>
         <p className="font-mono text-xs opacity-60">Justin Bieber · Scotiabank Arena · event {LIGHT_EVENT_ID}</p>
         {session === undefined ? null : session ? <Panel session={session} /> : <SignIn />}
       </div>
@@ -95,7 +96,7 @@ function Panel({ session }: { session: Session }) {
   useEffect(() => { amIAdmin().then(setAdmin).catch(() => setAdmin(false)); }, [session.user.id]);
   useEffect(() => {
     if (!admin) return;
-    const load = () => getShowStats().then(setStats).catch(() => {});
+    const load = () => { getShowStats().then(setStats).catch(() => {}); supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState)); };
     load();
     supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
     const t = setInterval(load, 5000);
@@ -109,6 +110,7 @@ function Panel({ session }: { session: Session }) {
   }, [admin]);
 
   async function send(cmd: Command, label: string, hex?: string) {
+    if (cmd !== "stop" && busy) return;
     setBusy(label);
     try {
       const row = await sendShowCommand({ data: { command: cmd, hex } });
@@ -125,7 +127,8 @@ function Panel({ session }: { session: Session }) {
   const big = "min-h-24 rounded-2xl border-2 p-4 font-display text-lg font-extrabold transition active:scale-95 disabled:opacity-50";
   return (
     <div className="mt-6 space-y-6">
-      <button disabled={!!busy} onClick={() => send("stop", "STOP SHOW")}
+      <MusicShowConsole state={state} onState={setState} send={send} />
+      <button onClick={() => send("stop", "STOP SHOW")}
         className="w-full rounded-2xl border-4 border-destructive bg-destructive py-5 font-display text-2xl font-extrabold text-destructive-foreground active:scale-[.99]">
         ■ {busy === "STOP SHOW" ? "STOPPING…" : "STOP SHOW"}
       </button>
