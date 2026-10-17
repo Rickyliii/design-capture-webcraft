@@ -1,4 +1,4 @@
-import type { ShowState } from "./light";
+import { AWAKENING_LENGTH, type ShowState } from "./light";
 import { validateTimeline } from "./music-show";
 
 export function openingFrame(state: ShowState | null, now: number) {
@@ -22,8 +22,8 @@ export function openingFrame(state: ShowState | null, now: number) {
     const to = timeline.cues[index + 1] ?? end;
     seconds = (stops[index] ?? 0) + (elapsed - from) / (to - from) * ((stops[index + 1] ?? 27) - (stops[index] ?? 0));
   } else if (state.mode === "awakening") {
-    seconds = elapsed / 20 * 27;
-    if (elapsed >= 20) return { visible: false, seconds: 27, phase: "reveal", complete: true };
+    seconds = elapsed;
+    if (elapsed >= AWAKENING_LENGTH) return { visible: false, seconds: 27, phase: "reveal", complete: true };
   } else return idle;
   const phase = seconds < 5 ? "darkness" : seconds < 12 ? "awakening" : seconds < 19 ? "convergence" : seconds < 22 ? "supernova" : "reveal";
   return { visible: true, seconds, phase, complete: false };

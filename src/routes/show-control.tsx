@@ -6,6 +6,8 @@ import { LIGHT_EVENT_ID, PRESENCE_CHANNEL, TEAMS, TEAM_IDS, isHex, type Command,
 import { amIAdmin, getShowStats, sendShowCommand } from "@/lib/light.functions";
 import { ParticipationQR } from "@/components/ParticipationQR";
 import { MusicShowConsole } from "@/components/MusicShowConsole";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/show-control")({
   head: () => ({
@@ -32,10 +34,7 @@ function ShowControl() {
   return (
     <div className="min-h-screen bg-foreground p-5 text-background">
       <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-3xl font-extrabold md:text-4xl">FANDROP LIVE — THE AWAKENING</h1>
-        <p className="font-mono text-xs opacity-60">Justin Bieber · Scotiabank Arena · event {LIGHT_EVENT_ID}</p>
-        <details className="mt-6 border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Participant QR code</summary><ParticipationQR /></details>
-        <Link to="/stage" target="_blank" className="mt-4 inline-block font-bold underline">OPEN STAGE SCREEN ↗</Link>
+        <header className="flex flex-wrap items-center justify-between gap-4"><div><p className="font-mono text-xs opacity-60">FANDROP · SHOW CONTROL</p><h1 className="mt-2 font-display text-3xl font-extrabold md:text-4xl">The Awakening</h1></div><Button variant="secondary" asChild><Link to="/stage" target="_blank"><ExternalLink className="h-4 w-4" />OPEN STAGE SCREEN</Link></Button></header>
         {session === undefined ? null : session ? <Panel session={session} /> : <SignIn />}
       </div>
     </div>
@@ -142,6 +141,8 @@ function Panel({ session }: { session: Session }) {
       </div>
       <p className="font-mono text-xs opacity-70">{describe(state)}</p>
       <MusicShowConsole state={state} onState={setState} send={send} />
+      {last && <p role="status" className={`font-mono text-xs ${last.ok ? "opacity-70" : "text-destructive"}`}>{last.ok ? "✓ " : "✕ "}{last.text}</p>}
+      <details className="border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Participant QR code</summary><ParticipationQR /></details>
       <details className="border-y border-background/20 py-3"><summary className="cursor-pointer font-bold">Command history & team counts</summary><p className={`mt-3 p-3 font-mono text-sm ${last && !last.ok ? "text-destructive" : "opacity-60"}`} role="status">
         Last command: {last ? `${last.ok ? "✓" : "✕"} ${last.text}` : "none yet this session"}
       </p><p className="font-mono text-xs opacity-60">Lights sent: {stats?.lights ?? "–"}</p></details>

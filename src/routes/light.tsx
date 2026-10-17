@@ -9,6 +9,7 @@ import { ConcertStar } from "@/components/ConcertStar";
 import { OpeningScene } from "@/components/OpeningScene";
 import { openingFrame } from "@/lib/opening";
 import { useLightSurface } from "@/hooks/use-light-surface";
+import { HomeScreenPrompt } from "@/components/HomeScreenPrompt";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -20,6 +21,9 @@ export const Route = createFileRoute("/light")({
   head: () => ({
     meta: [
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "FanDrop" },
       { title: "Live Light — FanDrop" },
       { name: "description", content: "Your Light. Your Moment. Our Show. Turn your phone into a synced concert lightstick." },
       { property: "og:title", content: "Live Light — FanDrop" },
@@ -27,6 +31,7 @@ export const Route = createFileRoute("/light")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "manifest", href: "/light.webmanifest" }, { rel: "apple-touch-icon", href: "/light-icon-180.png" }],
   }),
   component: LightPage,
 });
@@ -57,6 +62,7 @@ function LightPage() {
   if (editColor) return <StarEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
   if (stick) return <Lightstick fan={fan} initialMode={initialMode} onExit={() => setStick(false)} onChangeColor={() => setEditColor(true)} />;
   return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async (sync: boolean) => {
+    document.documentElement.requestFullscreen?.().catch(() => {});
     setInitialMode(sync ? "sync" : "solid"); setStick(true);
     try { const r = await recordActivity({ data: { fanId: id, kind: "lightstick_activated" } }); setFan(r.fan); } catch {}
   }} />;
@@ -188,6 +194,7 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
       <Button onClick={() => onActivate(true)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Radio /> JOIN CONCERT SYNC</Button>
       <Button variant="ghost" onClick={() => onActivate(false)} className="mt-3 min-h-12 w-full border border-background/30"><Sun /> MY LIGHT ONLY</Button>
       <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>EDIT STAR · COLOR & SHAPE</Button>
+      <HomeScreenPrompt />
 
       <section className="mt-8">
         <h2 className="font-display text-2xl font-extrabold">Star Battle</h2>
