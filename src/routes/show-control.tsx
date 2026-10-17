@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { LIGHT_EVENT_ID, STAR_COLORS, type Command, type ShowState } from "@/lib/light";
+import { LIGHT_EVENT_ID, PRESENCE_CHANNEL, TEAMS, TEAM_IDS, isHex, type Command, type ShowState } from "@/lib/light";
 import { amIAdmin, getShowStats, sendShowCommand } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/show-control")({
@@ -30,7 +30,7 @@ function ShowControl() {
   return (
     <div className="min-h-screen bg-foreground p-5 text-background">
       <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-3xl font-extrabold md:text-4xl">LIVE SHOW CONTROL</h1>
+        <h1 className="font-display text-3xl font-extrabold md:text-4xl">NOVA — LIVE SHOW CONTROL</h1>
         <p className="font-mono text-xs opacity-60">Justin Bieber · Scotiabank Arena · event {LIGHT_EVENT_ID}</p>
         {session === undefined ? null : session ? <Panel session={session} /> : <SignIn />}
       </div>
@@ -66,23 +66,31 @@ function SignIn() {
   );
 }
 
-const BUTTONS: { cmd: Command; label: string; bg?: string }[] = [
-  { cmd: "violet", label: "ALL VIOLET", bg: STAR_COLORS.violet.hex },
-  { cmd: "rose", label: "ALL ROSE", bg: STAR_COLORS.rose.hex },
-  { cmd: "gold", label: "ALL GOLD", bg: STAR_COLORS.gold.hex },
-  { cmd: "blue", label: "ALL BLUE", bg: STAR_COLORS.blue.hex },
-  { cmd: "team", label: "RESTORE TEAM COLORS" },
+const COLOR_BUTTONS: { cmd: Command; label: string; bg: string }[] = TEAM_IDS.map((t) => ({ cmd: t, label: `ALL ${TEAMS[t].label.toUpperCase()}`, bg: TEAMS[t].hex }));
+const SHOW_BUTTONS: { cmd: Command; label: string }[] = [
+  { cmd: "team", label: "RESTORE PERSONAL COLORS" },
   { cmd: "breathing", label: "START BREATHING" },
-  { cmd: "awakening", label: "START AWAKENING" },
-  { cmd: "stop", label: "STOP SHOW" },
+  { cmd: "aurora", label: "START AURORA" },
+  { cmd: "awakening", label: "START THE AWAKENING" },
 ];
+
+function describe(state: ShowState | null) {
+  if (!state) return "–";
+  if (!state.is_show_active) return "STOPPED — phones waiting";
+  if (state.mode === "color") return `SOLID · ${state.global_color && state.global_color in TEAMS ? `ALL ${state.global_color.toUpperCase()}` : state.global_color}`;
+  if (state.mode === "team") return "PERSONAL COLORS";
+  if (state.mode === "awakening") return "THE AWAKENING";
+  return state.mode.toUpperCase();
+}
 
 function Panel({ session }: { session: Session }) {
   const [admin, setAdmin] = useState<boolean | null>(null);
   const [stats, setStats] = useState<Awaited<ReturnType<typeof getShowStats>> | null>(null);
   const [state, setState] = useState<ShowState | null>(null);
-  const [toast, setToast] = useState("");
-  const [busy, setBusy] = useState<Command | null>(null);
+  const [online, setOnline] = useState<number | null>(null);
+  const [last, setLast] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [custom, setCustom] = useState("#22D3EE");
 
   useEffect(() => { amIAdmin().then(setAdmin).catch(() => setAdmin(false)); }, [session.user.id]);
   useEffect(() => {
@@ -91,51 +99,93 @@ function Panel({ session }: { session: Session }) {
     load();
     supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data }) => data && setState(data as ShowState));
     const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    // Live state echo: confirms the command actually landed in the shared backend.
+    const ch = supabase.channel(`ctrl-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "show_state", filter: `event_id=eq.${LIGHT_EVENT_ID}` }, (p) => setState(p.new as ShowState))
+      .subscribe();
+    const pres = supabase.channel(PRESENCE_CHANNEL);
+    pres.on("presence", { event: "sync" }, () => setOnline(Object.keys(pres.presenceState()).length)).subscribe();
+    return () => { clearInterval(t); supabase.removeChannel(ch); supabase.removeChannel(pres); };
   }, [admin]);
 
-  async function send(cmd: Command, label: string) {
-    setBusy(cmd);
+  async function send(cmd: Command, label: string, hex?: string) {
+    setBusy(label);
     try {
-      const row = await sendShowCommand({ data: { command: cmd } });
+      const row = await sendShowCommand({ data: { command: cmd, hex } });
       setState(row as ShowState);
-      setToast(`✓ ${label} sent to all connected phones`);
-    } catch { setToast("✕ Command failed — try again"); }
+      setLast({ ok: true, text: `${label} — sent ${new Date().toLocaleTimeString()}` });
+    } catch (e) { setLast({ ok: false, text: `${label} failed: ${(e as Error).message || "try again"}` }); }
     setBusy(null);
-    setTimeout(() => setToast(""), 3000);
   }
 
   const out = <button onClick={() => supabase.auth.signOut()} className="text-sm underline opacity-60">Sign out ({session.user.email})</button>;
   if (admin === null) return <p className="mt-8 opacity-70">Checking access…</p>;
   if (!admin) return <div className="mt-8 space-y-2"><p>This account isn't a show admin, so it can't control the lights.</p>{out}</div>;
 
+  const big = "min-h-24 rounded-2xl border-2 p-4 font-display text-lg font-extrabold transition active:scale-95 disabled:opacity-50";
   return (
     <div className="mt-6 space-y-6">
+      <button disabled={!!busy} onClick={() => send("stop", "STOP SHOW")}
+        className="w-full rounded-2xl border-4 border-destructive bg-destructive py-5 font-display text-2xl font-extrabold text-destructive-foreground active:scale-[.99]">
+        ■ {busy === "STOP SHOW" ? "STOPPING…" : "STOP SHOW"}
+      </button>
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[["Registered fans", stats?.registered], ["Lightsticks activated", stats?.activated], ["Lights sent", stats?.lights], ["Constellations done", stats?.challenges]].map(([l, v]) => (
-          <div key={l as string} className="rounded-2xl border border-background/20 p-4"><p className="font-mono text-xs opacity-60">{l}</p><p className="font-display text-3xl font-extrabold">{v ?? "–"}</p></div>
+        {[
+          ["Current mode", describe(state), true],
+          ["Registered fans", stats?.registered],
+          ["Connected now", online],
+          ["Lights sent", stats?.lights],
+        ].map(([l, v, small]) => (
+          <div key={l as string} className="rounded-2xl border border-background/20 p-4">
+            <p className="font-mono text-xs opacity-60">{l as string}</p>
+            <p className={`font-display font-extrabold ${small ? "text-base" : "text-3xl"}`}>{(v as string | number | null | undefined) ?? "–"}</p>
+          </div>
         ))}
       </div>
-      <div className="flex flex-wrap gap-3 text-sm">
-        {stats && (Object.keys(STAR_COLORS) as (keyof typeof STAR_COLORS)[]).map((c) => (
-          <span key={c} className="flex items-center gap-2 rounded-full border border-background/20 px-3 py-1"><span className="h-3 w-3 rounded-full" style={{ background: STAR_COLORS[c].hex }} />Team {STAR_COLORS[c].label}: {stats.teams[c] ?? 0}</span>
-        ))}
-      </div>
-      <div className="rounded-2xl border border-background/20 p-4 font-mono text-sm">
-        <p>Mode: <b>{state?.is_show_active ? state.mode.toUpperCase() : "STOPPED"}</b>{state?.global_color ? ` · ${state.global_color.toUpperCase()}` : ""}{state?.sequence_name ? ` · ${state.sequence_name}` : ""}</p>
-        <p className="opacity-60">Last command: {state ? new Date(state.updated_at).toLocaleTimeString() : "–"}</p>
-        <p className="opacity-60">Counts are registrations, not live connections.</p>
-      </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {BUTTONS.map((b) => (
-          <button key={b.cmd} disabled={!!busy} onClick={() => send(b.cmd, b.label)}
-            className={`min-h-24 rounded-2xl border-2 border-background/30 p-4 font-display text-lg font-extrabold disabled:opacity-50 ${b.bg ? "text-white" : ""}`}
-            style={b.bg ? { background: b.bg, borderColor: b.bg } : undefined}>
-            {busy === b.cmd ? "Sending…" : b.label}
+      <p className={`rounded-xl border p-3 font-mono text-sm ${last ? (last.ok ? "border-background/40" : "border-destructive text-destructive") : "border-background/20 opacity-60"}`} role="status">
+        Last command: {last ? `${last.ok ? "✓" : "✕"} ${last.text}` : "none yet this session"}
+      </p>
+
+      <section>
+        <h2 className="sticker mb-2 opacity-70">Whole-crowd color</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {COLOR_BUTTONS.map((b) => (
+            <button key={b.cmd} disabled={!!busy} onClick={() => send(b.cmd, b.label)} className={`${big} text-white`} style={{ background: b.bg, borderColor: b.bg }}>
+              {busy === b.label ? "Sending…" : b.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="sticker mb-2 opacity-70">Custom color</h2>
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-background/20 p-3">
+          <input type="color" value={custom} onChange={(e) => setCustom(e.target.value.toUpperCase())} aria-label="Pick a color" className="h-16 w-20 cursor-pointer rounded-xl border-0 bg-transparent" />
+          <input value={custom} onChange={(e) => setCustom(e.target.value)} maxLength={7} aria-label="Hex color" className="w-28 rounded-xl border-2 border-background/30 bg-transparent px-3 py-3 font-mono" />
+          <button disabled={!!busy || !isHex(custom)} onClick={() => send("custom", `COLOR ${custom.toUpperCase()}`, custom)}
+            className="min-h-16 flex-1 rounded-2xl px-5 font-display text-lg font-extrabold text-white disabled:opacity-50" style={{ background: isHex(custom) ? custom : undefined }}>
+            SEND COLOR TO FANS
           </button>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="sticker mb-2 opacity-70">Show moments</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {SHOW_BUTTONS.map((b) => (
+            <button key={b.cmd} disabled={!!busy} onClick={() => send(b.cmd, b.label)} className={`${big} border-background/30`}>
+              {busy === b.label ? "Sending…" : b.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <div className="flex flex-wrap gap-3 text-sm">
+        {stats && TEAM_IDS.map((c) => (
+          <span key={c} className="flex items-center gap-2 rounded-full border border-background/20 px-3 py-1"><span className="h-3 w-3 rounded-full" style={{ background: TEAMS[c].hex }} />Team {TEAMS[c].label}: {stats.teams[c] ?? 0}</span>
         ))}
       </div>
-      {toast && <p role="status" className="rounded-xl bg-background p-3 text-center font-bold text-foreground">{toast}</p>}
       <div className="flex justify-between">{out}<Link to="/light" className="text-sm underline opacity-60">Open fan lightstick</Link></div>
     </div>
   );

@@ -103,3 +103,21 @@
 
 @keyframes breathe { 0%,100% { opacity: 0 } 50% { opacity: 0.55 } }
 @utility animate-breathe { animation: breathe 3.5s ease-in-out infinite; }
+
+/* Lightstick: premium full-screen glow */
+.lightstick { transition: background-color 1.2s ease; }
+.lightstick-star { color: #fff; filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 90px var(--glow)); animation: star-float 6s ease-in-out infinite; }
+@keyframes star-float { 0%,100% { transform: translateY(4px) scale(1) } 50% { transform: translateY(-6px) scale(1.03) } }
+.lightstick-aurora {
+  background:
+    radial-gradient(60% 50% at 20% 30%, color-mix(in oklab, var(--glow) 60%, white) 0%, transparent 70%),
+    radial-gradient(55% 45% at 80% 70%, color-mix(in oklab, var(--glow) 55%, black) 0%, transparent 70%),
+    radial-gradient(50% 40% at 60% 20%, color-mix(in oklab, var(--glow) 70%, #38BDF8) 0%, transparent 70%);
+  background-size: 200% 200%;
+  animation: aurora-drift 14s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift { 0% { background-position: 0% 0%, 100% 100%, 50% 0% } 100% { background-position: 100% 50%, 0% 50%, 30% 100% } }
+@media (prefers-reduced-motion: reduce) {
+  .lightstick-star, .lightstick-aurora, .animate-breathe { animation: none !important; }
+  .animate-breathe { opacity: .25; }
+}

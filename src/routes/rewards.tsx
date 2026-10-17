@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Check, Lock, Sparkles, Star, Award, Gift, Vote, MessageCircle, Ticket, ArrowRight } from "lucide-react";
 import { ACTIONS, STAGES, AFTERLIGHT_EVENT, energyOf, stageOf, loadActions, markAction, resetActions, type ActionId } from "@/lib/afterlight";
 
@@ -17,11 +18,6 @@ export const Route = createFileRoute("/rewards")({
   }),
   component: Rewards,
 });
-
-const ICONS = [[Ticket, Award, Sparkles, Gift], [Star, Sparkles, Gift, Vote], [Award, MessageCircle, Sparkles, Gift], [Award, Ticket, Gift, MessageCircle]];
-const rewards = STAGES.flatMap((s, i) =>
-  s.perks.map((name, j) => ({ name, stage: s.n, Icon: ICONS[i]?.[j] ?? Gift, ...(i === 0 && j === 0 ? { to: "/pass" as const, cta: "View pass" } : {}) })),
-) as { name: string; stage: number; Icon: typeof Ticket; to?: "/pass"; cta?: string }[];
 
 const activities: { id: ActionId; title: string; why: string }[] = [
   { id: "pass", title: "Create your Fan Pass", why: "Your spark — the start of every journey." },
@@ -42,6 +38,8 @@ function Rewards() {
     return () => { window.removeEventListener(AFTERLIGHT_EVENT, sync); window.removeEventListener("storage", sync); };
   }, []);
 
+  const [picked, setPicked] = useState<number | null>(null);
+  const sel = STAGES.find((x) => x.n === picked);
   const energy = energyOf(done);
   const stage = stageOf(done);
   const cur = STAGES[stage - 1];
@@ -73,79 +71,50 @@ function Rewards() {
         </p>
       </section>
 
-      {/* B — timeline */}
+      {/* Stages — tap to see rewards */}
       <section className="mt-7">
-        <h2 className="sticker mb-3 text-muted-foreground">Journey</h2>
-        <ol className="relative space-y-2 border-l-2 border-dashed border-border pl-5">
+        <h2 className="sticker mb-3 text-muted-foreground">Stages</h2>
+        <div className="grid grid-cols-2 gap-3">
           {STAGES.map((s) => {
-            const complete = stage > s.n;
-            const active = stage === s.n;
+            const open = stage >= s.n;
             return (
-              <li key={s.n} className={`relative rounded-2xl p-3 ${active ? "bg-primary text-primary-foreground pop-sm" : complete ? "bg-card" : "bg-card opacity-60"}`}>
-                <span className="absolute -left-[33px] top-3 grid h-6 w-6 place-items-center rounded-full border-2 bg-background text-xs text-foreground">
-                  {complete || active ? <Check className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+              <button key={s.n} onClick={() => setPicked(s.n)}
+                className={`flex aspect-square flex-col items-start justify-between rounded-3xl border-2 p-4 text-left press ${stage === s.n ? "bg-primary text-primary-foreground pop" : open ? "bg-card pop-sm" : "bg-card opacity-70"}`}>
+                <span className="flex w-full items-center justify-between">
+                  <span className="text-3xl">{s.symbol}</span>
+                  {open ? <Check className="h-5 w-5" /> : <Lock className="h-4 w-4" />}
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{s.symbol}</span>
-                  <p className="font-display text-lg font-extrabold">{s.name}</p>
-                  <span className="sticker ml-auto opacity-70">Stage {s.n}</span>
-                </div>
-                <p className="mt-1 font-mono text-[11px] font-bold opacity-80">{s.range} · {s.theme}</p>
-                <p className="mt-1 text-sm opacity-80">{s.desc}</p>
-                <ul className="mt-2 space-y-0.5 text-xs">
-                  {s.perks.map((p) => <li key={p}>✦ {p}</li>)}
-                </ul>
-                <p className="mt-2 text-xs font-bold">{complete || active ? "Unlocked ✦" : `Unlocks at ${s.need.toLocaleString()} Energy`}</p>
-              </li>
+                <span>
+                  <span className="sticker block opacity-70">Stage {s.n}</span>
+                  <span className="font-display text-xl font-extrabold leading-tight">{s.name}</span>
+                </span>
+              </button>
             );
           })}
-        </ol>
+        </div>
       </section>
 
-      {/* C — vault */}
-      <section className="mt-7">
-        <h2 className="sticker mb-3 text-muted-foreground">Reward vault</h2>
-        {[{ label: "Available now", items: rewards.filter((r) => r.stage <= stage) }, { label: "Coming next", items: rewards.filter((r) => r.stage > stage) }].map((g) => (
-          <div key={g.label} className="mb-4">
-            <p className="mb-2 text-xs font-bold">{g.label} · {g.items.length}</p>
-            {g.items.length === 0 ? <p className="text-sm text-muted-foreground">Nothing here yet.</p> : (
-              <div className="grid grid-cols-2 gap-2">
-                {g.items.map((r) => {
-                  const open = r.stage <= stage;
-                  return (
-                    <div key={r.name} className={`flex flex-col rounded-2xl border-2 p-3 ${open ? "bg-accent text-accent-foreground pop-sm" : "bg-card opacity-60"}`}>
-                      <r.Icon className="h-5 w-5" />
-                      <p className="mt-2 text-sm font-bold leading-tight">{r.name}</p>
-                      <p className="mt-1 text-[11px] opacity-70">{open ? (r.to ? "Unlocked" : "Unlocked · demo preview") : `Stage ${r.stage}`}</p>
-                      {open && r.to && <Link to={r.to} className="mt-2 inline-flex items-center gap-1 text-xs font-bold underline">{r.cta} <ArrowRight className="h-3 w-3" /></Link>}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
-      </section>
-
-      {/* D — how to progress */}
-      <section className="mt-7">
-        <h2 className="sticker mb-3 text-muted-foreground">How to progress</h2>
-        <ul className="space-y-2">
-          {activities.map((a) => {
-            const ok = done.includes(a.id);
-            return (
-              <li key={a.id} className={`flex items-start gap-3 rounded-2xl border-2 p-3 ${ok ? "bg-muted" : "bg-card"}`}>
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 ${ok ? "bg-primary text-primary-foreground" : ""}`}>{ok ? <Check className="h-4 w-4" /> : <Sparkles className="h-3.5 w-3.5" />}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-bold">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{a.why}</p>
-                </div>
-                <span className="font-mono text-xs font-bold">{ok ? "Done" : `+${ACTIONS[a.id].energy}`}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      <Dialog open={picked !== null} onOpenChange={(o) => !o && setPicked(null)}>
+        <DialogContent className="max-w-sm rounded-3xl">
+          {sel && (
+            <>
+              <DialogHeader>
+                <p className="sticker text-muted-foreground">Stage {sel.n} · {sel.range}</p>
+                <DialogTitle className="font-display text-3xl font-extrabold">{sel.symbol} {sel.name}</DialogTitle>
+                <DialogDescription>{sel.theme} — {sel.desc}</DialogDescription>
+              </DialogHeader>
+              <ul className="space-y-2">
+                {sel.perks.map((p) => (
+                  <li key={p} className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-sm font-bold ${stage >= sel.n ? "bg-accent text-accent-foreground" : ""}`}>
+                    {stage >= sel.n ? <Gift className="h-4 w-4 shrink-0" /> : <Lock className="h-4 w-4 shrink-0" />}{p}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs font-bold text-muted-foreground">{stage >= sel.n ? "Unlocked ✦" : `Unlocks at ${sel.need.toLocaleString()} Energy`}</p>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Demo controls */}
       <details className="mt-8 rounded-2xl border-2 border-dashed p-3 text-sm">

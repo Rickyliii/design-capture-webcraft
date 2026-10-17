@@ -9,3 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Live Light: fans are anonymous (localStorage fan id) and write only through server functions using the admin client; show_state is publicly readable via realtime but only updatable by `admin` role (first signup becomes admin). Why: cross-device sync without fan accounts, while keeping light control server-authorized.
+- Show Control commands: server function writes show_state (admin-only) then sends a broadcast ping; phones re-read the table on ping, on table change, and every 4s. Why: database change events were not reaching phones in testing, and broadcast payloads can be spoofed by anyone.
