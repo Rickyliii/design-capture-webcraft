@@ -16,6 +16,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
+- [ ] Split stage opening into separate PLAY, STOP and REPLAY controls, retaining OPEN STAGE SCREEN.
 - [x] Provide the presenter control link on request.
 - [x] Further simplify presenter controls: opening/replay and STOP prominent, real counts retained, music/timing/manual tools disclosed; authorized stage and music start/stop checked, narrow layout checked, 27 tests passed.
 - [x] Improve iPhone safe-area light immersion and add manifest-only home-screen support with an explicit installation prompt; no offline cache. Simulated iPhone checks passed; native browser chrome still requires a physical device.

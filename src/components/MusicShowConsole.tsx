@@ -77,6 +77,11 @@ export function MusicShowConsole({ state, onState, send }: {
     audio.current?.pause(); setSilentStart(null); setPreview(false);
     await send("stop", label);
   }
+  function playOpening(replay = false) {
+    operation.current++;
+    audio.current?.pause(); setSilentStart(null); setPreview(false);
+    void send("awakening", replay ? "REPLAY OPENING ANIMATION" : "START OPENING ANIMATION");
+  }
   const stored = (() => { try { return validateTimeline(state?.music_timeline); } catch { return timeline; } })();
   const start = preview ? silentStart : state?.mode === "music" && state.sequence_start_time ? Date.parse(state.sequence_start_time) : silentStart;
   const activeTimeline = preview ? timeline : stored;
@@ -87,7 +92,7 @@ export function MusicShowConsole({ state, onState, send }: {
   const opening = openingFrame(state, now);
   return <section className="music-console space-y-5 border-y border-background/20 py-6">
     <header className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-2xl font-bold">Stage opening</h2><span className="font-mono text-xs opacity-60">{preview ? "LOCAL PREVIEW" : state?.mode === "music" && state.is_show_active ? cue === 6 ? "COMPLETE" : cue < 0 ? "PREPARING" : "ON AIR" : opening.visible ? `OPENING · ${Math.floor(opening.seconds ?? 0)} / 27s` : opening.complete ? "COMPLETE" : "STANDBY"}</span></header>
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]"><Button className="min-h-16 whitespace-normal" disabled={busy} onClick={() => { operation.current++; audio.current?.pause(); setSilentStart(null); setPreview(false); void send("awakening", "START OPENING ANIMATION"); }}><RotateCcw />START / REPLAY STAGE ANIMATION · 27s</Button><Button variant="destructive" className="min-h-16" onClick={() => stop()}><Square />STOP SHOW</Button></div>
+    <div className="grid grid-cols-3 gap-3"><Button className="min-h-16" disabled={busy} onClick={() => playOpening()}><Play />PLAY</Button><Button variant="destructive" className="min-h-16" onClick={() => stop()}><Square />STOP</Button><Button variant="secondary" className="min-h-16" disabled={busy} onClick={() => playOpening(true)}><RotateCcw />REPLAY</Button></div>
     <audio ref={audio} onLoadedMetadata={() => setDuration(audio.current?.duration ?? 0)} onTimeUpdate={() => {
       const at = audio.current?.currentTime ?? 0; setPosition(at);
       if (running && !preview && !stored.silent && start !== null && Math.abs(scheduledMusicStart(stored, at, Date.now() + offset.current) - start) > 1000) { setError("Audio timing changed. Lighting stopped to prevent an out-of-sync show."); void stop("AUDIO TIMING — STOP"); }
