@@ -1,20 +1,28 @@
-// Afterlight Journey: energy is awarded once per action; stages need energy AND a mandatory action.
+// Afterlight Journey: energy is awarded once per action; stage is decided by total energy alone.
 export type ActionId = "pass" | "light" | "qa" | "encore" | "return" | "drop";
 
 export const ACTIONS: Record<ActionId, { label: string; energy: number }> = {
-  pass: { label: "Create Fan Pass", energy: 50 },
-  light: { label: "Awaken Star and Send Light", energy: 100 },
-  qa: { label: "Submit or Upvote Q&A", energy: 50 },
-  encore: { label: "Hidden Encore Vote", energy: 100 },
-  return: { label: "Return After Show", energy: 100 },
-  drop: { label: "Future Artist Drop", energy: 100 },
+  pass: { label: "Create Fan Pass", energy: 100 },
+  light: { label: "Awaken Star and Send Light", energy: 400 },
+  qa: { label: "Submit or Upvote Q&A", energy: 300 },
+  encore: { label: "Hidden Encore Vote", energy: 500 },
+  return: { label: "Return After Show", energy: 700 },
+  drop: { label: "Future Artist Drop", energy: 2000 },
 };
 
 export const STAGES = [
-  { n: 1, name: "The Spark", symbol: "✧", need: 0, requires: "pass" as ActionId, desc: "Every connection starts with a spark.", unlock: "Create your Fan Pass" },
-  { n: 2, name: "The Awakened", symbol: "☾", need: 150, requires: "light" as ActionId, desc: "Your light became part of something bigger.", unlock: "150 Energy + send your light" },
-  { n: 3, name: "The Collaborator", symbol: "✺", need: 350, requires: "return" as ActionId, desc: "You help shape what comes next.", unlock: "350 Energy + return after the show" },
-  { n: 4, name: "Inner Circle", symbol: "◉", need: 500, requires: "drop" as ActionId, desc: "Closer to the music. Closer to the artist.", unlock: "500 Energy + join a future Artist Drop" },
+  { n: 1, name: "The Spark", symbol: "✧", need: 0, range: "0–499 Energy", theme: "Discover & Join",
+    desc: "Join automatically when you sign up and start building your FanDrop identity.",
+    perks: ["Digital Fan Passport", "Starter badge", "Concert interactions", "Basic rewards"] },
+  { n: 2, name: "The Awakened", symbol: "☾", need: 500, range: "500–1,499 Energy", theme: "Engage & Participate",
+    desc: "Go deeper with exclusive skins, early drops and limited challenges.",
+    perks: ["Exclusive animated Star Skin", "Early Artist Drop alerts", "Advanced digital collectibles", "Limited interactive challenges"] },
+  { n: 3, name: "The Collaborator", symbol: "✺", need: 1500, range: "1,500–3,999 Energy", theme: "Create & Influence",
+    desc: "Help shape what comes next alongside the artist.",
+    perks: ["Co-Creator Badge", "Submit to exclusive artist Q&A", "Special Fan Collaboration opportunities", "Limited content"] },
+  { n: 4, name: "Inner Circle", symbol: "◉", need: 4000, range: "4,000+ Energy", theme: "Belong & Get Recognized",
+    desc: "The closest circle — recognized and first in line.",
+    perks: ["Limited Inner Circle Badge", "Priority entry to special event draws", "Limited-edition collectibles", "Exclusive fan community events"] },
 ];
 
 export function energyOf(done: Iterable<ActionId>): number {
@@ -23,16 +31,17 @@ export function energyOf(done: Iterable<ActionId>): number {
   return t;
 }
 
-/** Highest stage reached in order; 0 = not started. */
+/** Stage from energy; 0 = not joined yet (no Fan Pass). */
+export function stageFromEnergy(e: number): number {
+  let s = 1;
+  for (const st of STAGES) if (e >= st.need) s = st.n;
+  return s;
+}
+
 export function stageOf(done: Iterable<ActionId>): number {
   const set = new Set(done);
-  const e = energyOf(set);
-  let s = 0;
-  for (const st of STAGES) {
-    if (e >= st.need && set.has(st.requires)) s = st.n;
-    else break;
-  }
-  return s;
+  if (!set.has("pass")) return 0;
+  return stageFromEnergy(energyOf(set));
 }
 
 const KEY = "fandrop-afterlight";
@@ -43,7 +52,6 @@ export function loadActions(): ActionId[] {
   let list: ActionId[] = [];
   try { list = JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch {}
   const set = new Set(list.filter((a) => a in ACTIONS));
-  // Derive from existing app data.
   try {
     const p = JSON.parse(localStorage.getItem("fandrop-profile") ?? "null");
     if (p?.name) set.add("pass");
