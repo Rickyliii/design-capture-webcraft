@@ -38,6 +38,14 @@
 }
 
 :root {
+  --star-electric-violet: #8B5CF6;
+  --star-lavender: #B49AFF;
+  --star-cosmic-blue: #2563EB;
+  --star-ice-cyan: #38BDF8;
+  --star-sunset-rose: #F43F8C;
+  --star-crimson-red: #EF4444;
+  --star-solar-gold: #FACC15;
+  --star-amber: #F59E0B;
   --radius: 1.25rem;
   --background: oklch(0.975 0.012 95);
   --foreground: oklch(0.16 0.02 280);
@@ -105,6 +113,15 @@
 @utility animate-breathe { animation: breathe 3.5s ease-in-out infinite; }
 
 /* Lightstick: premium full-screen glow */
+.star-swatch { width: 1.25rem; height: 1.25rem; border-radius: 50%; flex-shrink: 0; background: var(--swatch); }
+.star-swatch-electric_violet { --swatch: var(--star-electric-violet); }
+.star-swatch-lavender { --swatch: var(--star-lavender); }
+.star-swatch-cosmic_blue { --swatch: var(--star-cosmic-blue); }
+.star-swatch-ice_cyan { --swatch: var(--star-ice-cyan); }
+.star-swatch-sunset_rose { --swatch: var(--star-sunset-rose); }
+.star-swatch-crimson_red { --swatch: var(--star-crimson-red); }
+.star-swatch-solar_gold { --swatch: var(--star-solar-gold); }
+.star-swatch-amber { --swatch: var(--star-amber); }
 .music-preview { background: var(--preview-light); transition: background-color .1s linear; }
 .music-console { letter-spacing: 0; }
 .lightstick { transition: background-color 1.2s ease; }
