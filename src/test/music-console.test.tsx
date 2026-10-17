@@ -47,7 +47,7 @@ describe("presenter music safety", () => {
     fireEvent.click(screen.getByText("Advanced timing & silent test", { selector: "summary" }));
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "START MUSIC SHOW" }));
-    fireEvent.click(screen.getByRole("button", { name: "STOP", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "STOP" }));
     resolve(Date.now());
     await waitFor(() => expect(send).toHaveBeenCalledWith("stop", "STOP MUSIC SHOW"));
     expect(calls.start).not.toHaveBeenCalled();
@@ -55,14 +55,14 @@ describe("presenter music safety", () => {
   it("PLAY sends the shared opening command without requiring music", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "PLAY", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "PLAY" }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "START OPENING ANIMATION"));
     expect(calls.start).not.toHaveBeenCalled();
   });
   it("REPLAY restarts the shared opening without requiring music", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "REPLAY", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "REPLAY" }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "REPLAY OPENING ANIMATION"));
     expect(calls.start).not.toHaveBeenCalled();
   });
