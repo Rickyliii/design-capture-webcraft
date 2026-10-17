@@ -75,7 +75,6 @@ const SHOW_BUTTONS: { cmd: Command; label: string }[] = [
   { cmd: "team", label: "RESTORE PERSONAL COLORS" },
   { cmd: "breathing", label: "START BREATHING" },
   { cmd: "aurora", label: "START AURORA" },
-  { cmd: "awakening", label: "START THE AWAKENING" },
 ];
 
 function describe(state: ShowState | null) {
@@ -130,23 +129,22 @@ function Panel({ session }: { session: Session }) {
   const big = "min-h-24 rounded-2xl border-2 p-4 font-display text-lg font-extrabold transition active:scale-95 disabled:opacity-50";
   return (
     <div className="mt-6 space-y-6">
-      <MusicShowConsole state={state} onState={setState} send={send} />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3">
         {[
-          ["Current mode", describe(state), true],
           ["Registered fans", stats?.registered],
           ["Connected now", online],
-          ["Lights sent", stats?.lights],
         ].map(([l, v, small]) => (
-          <div key={l as string} className="rounded-2xl border border-background/20 p-4">
+          <div key={l as string} className="rounded-md border border-background/20 p-4">
             <p className="font-mono text-xs opacity-60">{l as string}</p>
             <p className={`font-display font-extrabold ${small ? "text-base" : "text-3xl"}`}>{(v as string | number | null | undefined) ?? "–"}</p>
           </div>
         ))}
       </div>
-      <p className={`rounded-xl border p-3 font-mono text-sm ${last ? (last.ok ? "border-background/40" : "border-destructive text-destructive") : "border-background/20 opacity-60"}`} role="status">
+      <p className="font-mono text-xs opacity-70">{describe(state)}</p>
+      <MusicShowConsole state={state} onState={setState} send={send} />
+      <details className="border-y border-background/20 py-3"><summary className="cursor-pointer font-bold">Command history & team counts</summary><p className={`mt-3 p-3 font-mono text-sm ${last && !last.ok ? "text-destructive" : "opacity-60"}`} role="status">
         Last command: {last ? `${last.ok ? "✓" : "✕"} ${last.text}` : "none yet this session"}
-      </p>
+      </p><p className="font-mono text-xs opacity-60">Lights sent: {stats?.lights ?? "–"}</p></details>
 
       <details className="border-y border-background/20 py-4"><summary className="cursor-pointer font-bold">Manual lighting</summary><div className="mt-4 space-y-6">
       <section>

@@ -39,9 +39,16 @@ describe("presenter music safety", () => {
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "START MUSIC SHOW" }));
-    fireEvent.click(screen.getByRole("button", { name: "STOP MUSIC SHOW" }));
+    fireEvent.click(screen.getByRole("button", { name: "STOP SHOW" }));
     resolve(Date.now());
     await waitFor(() => expect(send).toHaveBeenCalledWith("stop", "STOP MUSIC SHOW"));
+    expect(calls.start).not.toHaveBeenCalled();
+  });
+  it("opening replay sends the shared opening command without requiring music", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
+    fireEvent.click(screen.getByRole("button", { name: "PLAY / REPLAY OPENING" }));
+    await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "START OPENING ANIMATION"));
     expect(calls.start).not.toHaveBeenCalled();
   });
 });
