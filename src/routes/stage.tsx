@@ -9,6 +9,7 @@ import { useShowSync } from "@/hooks/use-show-sync";
 export const Route = createFileRoute("/stage")({
   head: () => ({ meta: [
     { title: "The Awakening — FanDrop Stage Screen" },
+    { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
     { name: "description", content: "The synchronized collective-star opening for FanDrop's concert stage screen." },
     { property: "og:title", content: "The Awakening — FanDrop Stage Screen" },
     { property: "og:description", content: "The synchronized collective-star opening for FanDrop's concert stage screen." },
@@ -21,7 +22,7 @@ function Stage() {
   return <main className="relative h-dvh overflow-hidden bg-foreground text-background">
     <OpeningScene frame={frame} color={colorInfo("solar_gold").hex} />
     <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-4 p-5">
-      <p className="font-mono text-xs">FANDROP · THE AWAKENING · {frame.visible ? "ON AIR" : frame.complete ? "AFTERLIGHT" : "WAITING FOR PRESENTER"}</p>
+      <p className="font-mono text-xs">FANDROP · THE AWAKENING · {frame.visible ? `${Math.floor(frame.seconds ?? 0).toString().padStart(2, "0")} / 27 SECONDS` : frame.complete ? "AFTERLIGHT" : "WAITING FOR PRESENTER"}</p>
       <div className="flex gap-2"><Button variant="secondary" size="icon" aria-label="Fullscreen stage" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}><Maximize /></Button><Button variant="secondary" size="icon" asChild><Link to="/live" aria-label="Exit stage"><X /></Link></Button></div>
     </div>
   </main>;

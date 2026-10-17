@@ -155,4 +155,7 @@ html[data-concert-light], html[data-concert-light] body { background: var(--conc
 .opening-scene { background: var(--foreground); color: var(--background); letter-spacing: 0; }
 .opening-scene .universe-scene, .opening-scene .webgl-sky, .opening-scene .collective-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .opening-scene canvas { display: block; width: 100%; height: 100%; }
+.opening-scene .static-sky { position: absolute; inset: 0; }
+.opening-scene .static-sky i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--star-solar-gold); box-shadow: 0 0 6px var(--star-solar-gold); }
+.opening-copy { background: linear-gradient(0deg, color-mix(in srgb, var(--foreground) 40%, transparent), transparent 40%); }
 .opening-scene .personal-light-label { position: absolute; top: 40%; left: 58%; font-size: 11px; }
