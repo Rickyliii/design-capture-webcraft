@@ -17,6 +17,7 @@
 
 ## Open (new)
 - [x] Shorten the presentation opening from 27 to 15 seconds, preserving all phases and PLAY/STOP/REPLAY; 20 tests passed and authorized stage playback, reveal, completion, replay and stop verified. Editable music timelines remain unchanged.
+- [x] Lengthen the presentation opening to 22 seconds (15 felt too short); all five phases retimed from the uploaded 27-second choreography, boundaries covered by tests.
 - [x] Split stage opening into separate PLAY, STOP and REPLAY controls, retaining OPEN STAGE SCREEN; verified stage play, replay restart and stop-to-waiting in an authorized browser.
 - [x] Provide the presenter control link on request.
 - [x] Further simplify presenter controls: opening/replay and STOP prominent, real counts retained, music/timing/manual tools disclosed; authorized stage and music start/stop checked, narrow layout checked, 27 tests passed.
