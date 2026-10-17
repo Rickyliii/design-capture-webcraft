@@ -14,16 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      light_activity: {
+        Row: {
+          created_at: string
+          event_id: string
+          fan_id: string
+          id: number
+          kind: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          fan_id: string
+          id?: number
+          kind: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          fan_id?: string
+          id?: number
+          kind?: string
+        }
+        Relationships: []
+      }
+      light_fans: {
+        Row: {
+          activated: boolean
+          challenge_done: boolean
+          created_at: string
+          event_id: string
+          fan_id: string
+          first_concert_self_reported: string | null
+          id: string
+          light_sent: boolean
+          nickname: string
+          star_color: string
+          star_type: string
+        }
+        Insert: {
+          activated?: boolean
+          challenge_done?: boolean
+          created_at?: string
+          event_id: string
+          fan_id: string
+          first_concert_self_reported?: string | null
+          id?: string
+          light_sent?: boolean
+          nickname: string
+          star_color: string
+          star_type: string
+        }
+        Update: {
+          activated?: boolean
+          challenge_done?: boolean
+          created_at?: string
+          event_id?: string
+          fan_id?: string
+          first_concert_self_reported?: string | null
+          id?: string
+          light_sent?: boolean
+          nickname?: string
+          star_color?: string
+          star_type?: string
+        }
+        Relationships: []
+      }
+      show_state: {
+        Row: {
+          event_id: string
+          global_color: string | null
+          is_show_active: boolean
+          mode: string
+          sequence_name: string | null
+          sequence_start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          event_id: string
+          global_color?: string | null
+          is_show_active?: boolean
+          mode?: string
+          sequence_name?: string | null
+          sequence_start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          event_id?: string
+          global_color?: string | null
+          is_show_active?: boolean
+          mode?: string
+          sequence_name?: string | null
+          sequence_start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +269,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
