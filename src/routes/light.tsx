@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Radio, Sparkles, Sun, Waves, WifiOff, X } from "lucide-react";
+import { ArrowLeft, Maximize, Radio, Sparkles, Sun, Waves, WifiOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadPass } from "@/lib/fanPass";
 import { markAction } from "@/lib/afterlight";
@@ -13,7 +13,7 @@ import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
 } from "@/lib/light";
-import { changeStarColor, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
+import { changeStarAppearance, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
   validateSearch: (search: Record<string, unknown>): { concert?: boolean } => ({ concert: search["concert"] === true || search["concert"] === "true" }),
@@ -54,8 +54,8 @@ function LightPage() {
 
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
   if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
-  if (editColor) return <ColorEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
-  if (stick) return <Lightstick fan={fan} initialMode={initialMode} onExit={() => setStick(false)} onChangeColor={() => { setStick(false); setEditColor(true); }} />;
+  if (editColor) return <StarEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
+  if (stick) return <Lightstick fan={fan} initialMode={initialMode} onExit={() => setStick(false)} onChangeColor={() => setEditColor(true)} />;
   return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async (sync: boolean) => {
     setInitialMode(sync ? "sync" : "solid"); setStick(true);
     try { const r = await recordActivity({ data: { fanId: id, kind: "lightstick_activated" } }); setFan(r.fan); } catch {}
@@ -66,21 +66,26 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <div className="min-h-screen bg-foreground px-5 py-8 text-background"><div className="mx-auto max-w-md">{children}</div></div>;
 }
 
-function ColorEditor({ fan, onCancel, onSave }: { fan: LightFan; onCancel: () => void; onSave: (fan: LightFan) => void }) {
+function StarEditor({ fan, onCancel, onSave }: { fan: LightFan; onCancel: () => void; onSave: (fan: LightFan) => void }) {
   const [color, setColor] = useState<PaletteColor>(colorInfo(fan.star_color).id);
+  const [type, setType] = useState<StarType>(STAR_TYPES.find(t => t === fan.star_type) ?? "Nova");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function save() {
     setBusy(true); setError("");
-    try { onSave(await changeStarColor({ data: { fanId: fan.fan_id, color } })); }
-    catch { setError("Couldn't save your color. Please try again."); }
+    try { onSave(await changeStarAppearance({ data: { fanId: fan.fan_id, color, type } })); }
+    catch { setError("Couldn't save your star. Please try again."); }
     finally { setBusy(false); }
   }
   return <Shell><Button variant="ghost" className="border border-background/30" disabled={busy} onClick={onCancel}><ArrowLeft />Back to my star</Button>
-    <h1 className="mt-8 font-display text-3xl font-bold">Choose your star color</h1>
+    <h1 className="mt-8 font-display text-3xl font-bold">Edit your star</h1>
+    <ConcertStar type={type} className="mx-auto mt-6 h-20 w-20" />
+    <h2 className="mt-6 font-bold">Star shape</h2>
+    <div className="mt-2 grid grid-cols-4 gap-2">{STAR_TYPES.map(t => <Button key={t} variant="ghost" disabled={busy} aria-pressed={type === t} onClick={() => setType(t)} className={`h-24 min-w-0 flex-col gap-2 px-1 border border-background/30 ${type === t ? "bg-background text-foreground" : ""}`}><ConcertStar type={t} className="h-10 w-10" />{t}</Button>)}</div>
+    <h2 className="mt-6 font-bold">Star color</h2>
     <div className="mt-6 grid grid-cols-2 gap-3">{PALETTE_IDS.map(c => <Button key={c} variant="ghost" className={`min-h-20 whitespace-normal border border-background/30 ${color === c ? "bg-background text-foreground" : ""}`} aria-label={PALETTE[c].label} aria-pressed={color === c} disabled={busy} onClick={() => setColor(c)}><span className={`star-swatch star-swatch-${c}`} aria-hidden="true" />{PALETTE[c].label}</Button>)}</div>
     <p className="mt-4 font-mono text-sm">{PALETTE[color].label} · Team {TEAMS[PALETTE[color].team].label}</p>
-    <Button className="mt-6 min-h-14 w-full" disabled={busy} onClick={save}>{busy ? "Saving…" : "SAVE COLOR"}</Button>
+    <Button className="mt-6 min-h-14 w-full" disabled={busy} onClick={save}>{busy ? "Saving…" : "SAVE STAR"}</Button>
     {error && <p role="alert" className="mt-3">{error}</p>}
   </Shell>;
 }
@@ -182,7 +187,7 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
       <p className="mt-2 text-sm opacity-80">Concert Sync lets the presenter change this page’s light with the music. It does not control your phone. Choose Solid or EXIT anytime.</p>
       <Button onClick={() => onActivate(true)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Radio /> JOIN CONCERT SYNC</Button>
       <Button variant="ghost" onClick={() => onActivate(false)} className="mt-3 min-h-12 w-full border border-background/30"><Sun /> MY LIGHT ONLY</Button>
-      <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>CHANGE STAR COLOR</Button>
+      <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>EDIT STAR · COLOR & SHAPE</Button>
 
       <section className="mt-8">
         <h2 className="font-display text-2xl font-extrabold">Star Battle</h2>
@@ -295,7 +300,8 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
       {showOpening && <OpeningScene frame={opening} color={ownHex} />}
       <div className="lightstick-header relative z-10 flex items-center justify-between gap-2 p-3">
         <Button variant="ghost" onClick={onExit} aria-label="Exit lightstick" className="min-h-11 bg-foreground/35 px-3 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</Button>
-        <Button variant="ghost" className="min-h-11 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>CHANGE COLOR</Button>
+        <Button variant="ghost" className="min-h-11 px-2 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>EDIT STAR</Button>
+        <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 bg-foreground/35" aria-label="Fullscreen light" title="Fullscreen light" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}><Maximize className="h-4 w-4" /></Button>
         {mode === "sync" && (
           <span className="flex items-center gap-1 rounded-full bg-black/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
             {status === "live" ? <><Radio className="h-3 w-3 animate-pulse" /> LIVE</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}

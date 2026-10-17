@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { starColorUpdate } from "@/lib/star-color";
+import { starAppearanceUpdate, starColorUpdate } from "@/lib/star-color";
 import { PALETTE_IDS, teamOf } from "@/lib/light";
 describe("changing an activated star color", () => {
   it("allows all eight colors", () => {
@@ -12,4 +12,9 @@ describe("changing an activated star color", () => {
     expect(teamOf(next.star_color)).toBe("blue");
   });
   it("rejects arbitrary values", () => expect(() => starColorUpdate("invalid")).toThrow());
+  it("changes saved color and shape without resetting identity or participation", () => {
+    const fan = { fan_id: "same-fan", nickname: "Alex", star_type: "Nova", star_color: "electric_violet", activated: true, light_sent: true, challenge_done: true };
+    expect({ ...fan, ...starAppearanceUpdate("cosmic_blue", "Comet") }).toEqual({ ...fan, star_color: "cosmic_blue", star_type: "Comet" });
+  });
+  it("rejects an unknown shape", () => expect(() => starAppearanceUpdate("cosmic_blue", "unknown")).toThrow());
 });
