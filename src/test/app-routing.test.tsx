@@ -23,6 +23,12 @@ describe("App routing", () => {
       "Rewards",
       "Profile",
       "Live",
+      "Artists",
     ]);
+  });
+
+  it("matches the artist participation page", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes("/artists").at(-1)?.routeId).toBe("/artists");
   });
 });
