@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { AppShell } from "@/components/AppShell";
-import { Merchandise } from "@/components/Merchandise";
+import { ExclusiveMerch } from "@/components/ExclusiveMerch";
 import { isGateScanned, setGateScanned } from "@/lib/gate";
 import { MessageCircle, Gift, ArrowRight, Ticket, X, ScanLine } from "lucide-react";
 
@@ -67,7 +67,7 @@ function Index() {
         <ArrowRight className="h-5 w-5" />
       </Link>
 
-      <Merchandise />
+      <ExclusiveMerch />
 
       <h2 className="mb-3 mt-8 text-xl font-extrabold">Before the show</h2>
       <div className="space-y-3">

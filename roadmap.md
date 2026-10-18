@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- [x] Selectively incorporate FanDrop-source.zip merchandise: imported hoodie/keychain images, product previews and local demo purchase; preserve current Before the show links, navigation, 22-second opening and phone sync.
 - Merchandise sample collection added directly to Show with product imagery and three named items; no checkout or invented prices.
 - Chorus screen rebuilt as a video flow: live camera viewfinder, 15-sec record, watch back, send
 - Artist switched to Justin Bieber on every screen, with real song titles (Peaches, YUKON, Sorry, Baby)
