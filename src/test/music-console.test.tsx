@@ -10,25 +10,25 @@ describe("animation-only presenter controls", () => {
   it("starts the shared opening", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "START", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^START$/ }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "START OPENING ANIMATION"));
   });
   it("pauses the shared opening rather than stopping it", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={state} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "PAUSE", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^PAUSE$/ }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("pause", "PAUSE OPENING ANIMATION"));
   });
   it("START resumes a paused opening", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={{ ...state, mode: "awakening_paused" }} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "START", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^START$/ }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("resume", "RESUME OPENING ANIMATION"));
   });
   it("restarts from zero through a fresh opening command", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={state} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "RESTART", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^RESTART$/ }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "RESTART OPENING ANIMATION"));
   });
 });
