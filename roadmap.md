@@ -14,6 +14,7 @@
 - [x] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity including legacy fresh links; 34 tests and simulated mobile creation, eight colors, four shapes, activation, modes, authorized four-color sync, exit and 22-second stage pause/resume verified. Backend and presenter commands unchanged; physical-phone QR access and browser chrome require a manual rehearsal.
 
 ## Done
+- [x] Shorten the shared stage opening from 22 to 15 seconds, keeping all five phases; 66 tests passed and the authorized control screen was used to start the opening while the stage counter ran 0 → 15 before showing AFTERLIGHT.
 - [x] Remove the "T-minus 3d" badge from the top-right of the app header; the fanDrop logo stays on the left and no gap remains, checked on Show, Live and Rewards.
 - [x] Replace Aurora with Wave Mode: a bright light band sweeps across the screen every 3.5s over a deep-blue base, tinted by the fan's own Star Color, while the centre star stays fixed; the presenter button reads START WAVE. Reduced-motion preference is honoured and 17 tests passed.
 
