@@ -17,7 +17,7 @@ export function AppShell({ title, kicker, children }: { title: string; kicker: s
         <span className="font-display text-2xl font-extrabold">
           fan<span className="text-accent">drop</span>
         </span>
-        <span className="sticker rounded-full bg-primary px-2.5 py-1 pop-sm">T-minus 3d</span>
+
       </header>
       <main className="flex-1 px-5 pb-28 pt-5">
         <p className="sticker text-accent">{kicker}</p>
