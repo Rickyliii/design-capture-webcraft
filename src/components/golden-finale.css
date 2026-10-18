@@ -1,0 +1,12 @@
+.golden-finale {
+  --finale-spark: #fff0ad;
+  --finale-trail: #a66b09;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .golden-finale { display: none; }
+}
