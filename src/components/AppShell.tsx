@@ -4,10 +4,10 @@ import { Home, MessagesSquare, Gift, IdCard, Radio } from "lucide-react";
 
 const tabs = [
   { to: "/", label: "Show", icon: Home },
-  { to: "/live", label: "Live", icon: Radio },
-  { to: "/rewards", label: "Rewards", icon: Gift },
   { to: "/messages", label: "Forum", icon: MessagesSquare },
+  { to: "/rewards", label: "Rewards", icon: Gift },
   { to: "/pass", label: "Profile", icon: IdCard },
+  { to: "/live", label: "Live", icon: Radio },
 ] as const;
 
 export function AppShell({ title, kicker, children }: { title: string; kicker: string; children: ReactNode }) {
