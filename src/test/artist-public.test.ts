@@ -11,7 +11,7 @@ import { getArtistStats } from "@/lib/artist.functions";
 
 describe("Public artist statistics", () => {
   it("returns counts without a session and never requests fan records", async () => {
-    const query = {
+    const query = { data: [], error: null,
       eq: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(),
       then: (resolve: (value: unknown) => unknown) => Promise.resolve({ count: 7, error: null }).then(resolve),
     };
