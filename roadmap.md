@@ -21,7 +21,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
-- [x] Make the browser-only participation QR directly visible within Live's Awakening entry, preserving explicit JOIN and existing presenter control; QR link, anonymous star-creation entry and narrow-screen layout verified, three tests passed. Public guest access still requires publication or shared preview access.
+- [x] Revert the rejected directly-visible Live QR addition; retain the existing participant QR inside the Awakening dialog.
 - [x] Shorten the presentation opening from 27 to 15 seconds, preserving all phases and PLAY/STOP/REPLAY; 20 tests passed and authorized stage playback, reveal, completion, replay and stop verified. Editable music timelines remain unchanged.
 - [x] Lengthen the presentation opening to 22 seconds (15 felt too short); all five phases retimed from the uploaded 27-second choreography, boundaries covered by tests.
 - [x] Split stage opening into separate PLAY, STOP and REPLAY controls, retaining OPEN STAGE SCREEN; verified stage play, replay restart and stop-to-waiting in an authorized browser.
