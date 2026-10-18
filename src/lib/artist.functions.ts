@@ -17,5 +17,17 @@ export const getArtistStats = createServerFn({ method: "GET" }).handler(async ()
     countFans(), countFans("activated"), countFans("light_sent"), countFans("challenge_done"),
     Promise.all(TEAM_IDS.map(team => countFans(undefined, [team, ...PALETTE_IDS.filter(color => PALETTE[color].team === team)]))),
   ]);
-  return { registered, activated, lights, challenges, teams: Object.fromEntries(TEAM_IDS.map((team, i) => [team, teamCounts[i] ?? 0])) };
+  const { data: memoryRows, error: memoryError } = await db.from("light_activity").select("fan_id, kind, created_at").eq("event_id", LIGHT_EVENT_ID).in("kind", ["memory_card_saved", "memory_card_shared"]);
+  if (memoryError) throw new Error("Participation data unavailable");
+  const saved = (memoryRows ?? []).filter(r => r.kind === "memory_card_saved");
+  const shared = new Set((memoryRows ?? []).filter(r => r.kind === "memory_card_shared").map(r => r.fan_id)).size;
+  let joined: { fan_id: string; created_at: string }[] = [];
+  if (saved.length) {
+    const { data, error: joinError } = await db.from("light_fans").select("fan_id, created_at").eq("event_id", LIGHT_EVENT_ID).in("fan_id", saved.map(r => r.fan_id));
+    if (joinError) throw new Error("Participation data unavailable");
+    joined = data ?? [];
+  }
+  const { afterShowSummary } = await import("@/lib/artist-stats");
+  const afterShow = afterShowSummary(saved, joined, shared);
+  return { registered, activated, lights, challenges, afterShow, teams: Object.fromEntries(TEAM_IDS.map((team, i) => [team, teamCounts[i] ?? 0])) };
 });

@@ -115,6 +115,11 @@ export const recordActivity = createServerFn({ method: "POST" })
       const { data: changed } = await db.from("light_fans").update(flag === "activated" ? { activated: true } : flag === "light_sent" ? { light_sent: true } : { challenge_done: true }).eq("event_id", LIGHT_EVENT_ID).eq("fan_id", data.fanId).eq(flag, false).select("id");
       first = (changed?.length ?? 0) > 0;
     }
+    if (!flag && data.kind.startsWith("memory_card_")) {
+      // Memory card activity counts once per fan.
+      const { count } = await db.from("light_activity").select("id", { count: "exact", head: true }).eq("event_id", LIGHT_EVENT_ID).eq("fan_id", data.fanId).eq("kind", data.kind);
+      first = (count ?? 0) === 0;
+    }
     if (first) await db.from("light_activity").insert({ event_id: LIGHT_EVENT_ID, fan_id: data.fanId, kind: data.kind });
     const { data: updated } = await db.from("light_fans").select(FAN_COLS).eq("event_id", LIGHT_EVENT_ID).eq("fan_id", data.fanId).single();
     return { first, fan: updated as LightFan };

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getArtistStats } from "@/lib/artist.functions";
 import { PRESENCE_CHANNEL, TEAMS, TEAM_IDS } from "@/lib/light";
-import { activationRate, participationActivities, type ParticipationStats } from "@/lib/artist-stats";
+import { activationRate, formatMinutes, participationActivities, type ParticipationStats } from "@/lib/artist-stats";
 
 export const Route = createFileRoute("/artists")({
   head: () => ({ meta: [
@@ -78,6 +78,7 @@ function Impact() {
       <p className="mt-4 text-xs text-muted-foreground">Unique fans per activity · This event</p>
     </section>
     {stats && <section className="border-t py-5"><h2 className="mb-4 text-lg font-bold">Crowd colors</h2><div className="grid grid-cols-4 gap-2">{TEAM_IDS.map(team => <div key={team} className="text-center"><span className={`star-swatch star-swatch-${team === "violet" ? "electric_violet" : team === "blue" ? "cosmic_blue" : team === "rose" ? "sunset_rose" : "solar_gold"} mx-auto mb-2 block`} /><p className="text-lg font-bold">{stats.teams[team] ?? 0}</p><p className="text-xs text-muted-foreground">{TEAMS[team].label}</p></div>)}</div></section>}
-    <div className="border-t py-4 text-xs text-muted-foreground"><p>Post-show return · Not tracked yet</p><p className="mt-2">{updated ? `Updated ${updated.toLocaleTimeString()} · Refreshes every 5 seconds` : "Awaiting first update"}</p><p className="mt-1">Connected now counts synced devices, not verified attendance.</p></div>
+    {stats?.afterShow && <section className="border-t py-5"><h2 className="mb-1 text-lg font-bold">After the show</h2><p className="mb-4 text-xs text-muted-foreground">Memory cards fans saved after joining the light show</p><div className="grid grid-cols-3 gap-2">{[{ label: "Memory cards", value: stats.afterShow.memoryCards.toLocaleString() }, { label: "Shared", value: stats.afterShow.shared.toLocaleString() }, { label: "Median time to card", value: formatMinutes(stats.afterShow.medianMinutes) }].map(m => <div key={m.label} className="rounded-md border p-3"><p className="font-display text-2xl font-extrabold">{m.value}</p><p className="mt-1 text-xs text-muted-foreground">{m.label}</p></div>)}</div><p className="mt-3 text-xs text-muted-foreground">Time measured from creating a star to saving the first memory card.</p></section>}
+    <div className="border-t py-4 text-xs text-muted-foreground"><p className="mt-2">{updated ? `Updated ${updated.toLocaleTimeString()} · Refreshes every 5 seconds` : "Awaiting first update"}</p><p className="mt-1">Connected now counts synced devices, not verified attendance.</p></div>
   </>;
 }
