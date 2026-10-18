@@ -7,6 +7,8 @@ import { MemoryAlbum } from "@/components/memory/MemoryAlbum";
 import { AlbumUpload } from "@/components/memory/AlbumUpload";
 import { formatDate, getEvent, MESSAGE_LIMIT, MOODS, songsFor } from "@/lib/memory-data";
 import { useMemory } from "@/lib/use-memory";
+import { recordActivity } from "@/lib/light.functions";
+import { LIGHT_ID_KEY } from "@/lib/light-identity";
 
 export const Route = createFileRoute("/pass_/memory/$eventId")({
   loader: ({ params }) => {
@@ -67,18 +69,22 @@ function MemoryPage() {
     }
   };
 
+  const track = (kind: "memory_card_saved" | "memory_card_shared") => {
+    const fanId = localStorage.getItem(LIGHT_ID_KEY);
+    if (fanId) recordActivity({ data: { fanId, kind } }).catch(() => {});
+  };
   const fileName = `fandrop-${event.id}-memory.png`;
   const download = (url: string) => { const a = document.createElement("a"); a.href = url; a.download = fileName; a.click(); };
   const save = async () => {
     setBusy("save");
-    try { download(await render()); flash("Memory saved ✦"); } catch { flash("Couldn't create the image, try again"); } finally { setBusy(null); }
+    try { download(await render()); flash("Memory saved ✦"); track("memory_card_saved"); } catch { flash("Couldn't create the image, try again"); } finally { setBusy(null); }
   };
   const share = async () => {
     setBusy("share");
     try {
       const url = await render();
       const file = new File([await (await fetch(url)).blob()], fileName, { type: "image/png" });
-      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: "My concert memory" });
+      if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: "My concert memory" }); track("memory_card_shared"); }
       else { download(url); flash("Sharing isn't supported here — downloaded instead"); }
     } catch (e) {
       if ((e as Error).name !== "AbortError") flash("Couldn't share, try saving instead");

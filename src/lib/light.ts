@@ -49,6 +49,8 @@ export const ACTIVITY_KINDS = [
   "light_sent",
   "challenge_completed",
   "concert_sync_entered",
+  "memory_card_saved",
+  "memory_card_shared",
 ] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
