@@ -1,6 +1,9 @@
 # Roadmap
 
 ## Done
+- [x] Remove the "T-minus 3d" badge from the top-right of the app header; the fanDrop logo stays on the left and no gap remains, checked on Show, Live and Rewards.
+- [x] Replace Aurora with Wave Mode: a bright light band sweeps across the screen every 3.5s over a deep-blue base, tinted by the fan's own Star Color, while the centre star stays fixed; the presenter button reads START WAVE. Reduced-motion preference is honoured and 17 tests passed.
+
 - [x] Restore memory card photos: the five CDN concert scenes had gone missing (all 404), so five new AI-generated demo scenes were created and re-uploaded as CDN assets; Profile shelf and memory card pages verified showing photos with legible text.
 - [x] Remove the "Before the show" heading and its two cards (voice note, Fan rewards) from Show; the Forum and Rewards tabs already cover both.
 - [x] Rename the Show ticket link to "Get tickets" and reorder the bottom tabs to Show, Live, Rewards, Forum, Profile; verified in the preview at 390px.
