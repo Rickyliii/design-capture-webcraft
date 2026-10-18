@@ -2,11 +2,11 @@
   "source": "FanDrop-source.zip",
   "mode": "selective-merge",
   "capabilities": [
-    { "capability": "Exclusive merchandise and demo purchase", "source": "src/components/ExclusiveMerch.tsx", "outcome": "merge", "status": "pending", "next_action": "Import product assets and verify both demo flows." },
-    { "capability": "Show page and navigation changes", "source": "src/routes/index.tsx and src/components/AppShell.tsx", "outcome": "merge", "status": "pending", "next_action": "Apply uploaded Show layout and tab order." },
-    { "capability": "Product image bytes", "source": "src/assets/merch-hoodie.jpg and merch-keychain.jpg", "outcome": "merge", "status": "pending", "next_action": "Upload to project asset hosting." },
+    { "capability": "Exclusive merchandise and demo purchase", "source": "src/components/ExclusiveMerch.tsx", "outcome": "merge", "status": "verified", "next_action": "None; both product flows exercised in browser, demo-only network invariant tested." },
+    { "capability": "Show page and navigation changes", "source": "src/routes/index.tsx and src/components/AppShell.tsx", "outcome": "selective-merge", "status": "verified", "next_action": "None; merchandise replaced, current Before the show links and navigation retained instead of older removals/reordering." },
+    { "capability": "Product image bytes", "source": "src/assets/merch-hoodie.jpg and merch-keychain.jpg", "outcome": "merge", "status": "verified", "next_action": "None; hosted assets rendered in both browser product flows." },
     { "capability": "Existing auth, schema, records, fan identity and authorization", "source": "Existing Lovable Cloud application", "outcome": "preserve", "status": "unchanged", "next_action": "Do not overwrite with older archive files; no new record export or schema supplied." },
-    { "capability": "Stage opening, presenter control, phone sync, installation and memory features", "source": "Existing application", "outcome": "preserve", "status": "pending", "next_action": "Keep current implementation and run relevant regressions." },
+    { "capability": "Stage opening, presenter control, phone sync, installation and memory features", "source": "Existing application", "outcome": "preserve", "status": "unchanged", "next_action": "Current code preserved; opening, console, safe-area and participation regression tests passed, stage waiting screen checked. No new real-phone verification claimed." },
     { "capability": "Payments, external providers, callbacks, webhooks, schedules and secrets", "source": "Merchandise call sites", "outcome": "not-required", "status": "inspected", "next_action": "Demo is local state only; no real order, payment or fulfillment." }
   ]
 }

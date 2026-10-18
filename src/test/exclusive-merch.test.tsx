@@ -12,14 +12,14 @@ describe("Merchandise demo state", () => {
   it("resets selected size and completion when a product is reopened", () => {
     render(<ExclusiveMerch />);
     fireEvent.click(screen.getByRole("button", { name: "View First Light Hoodie" }));
-    fireEvent.click(screen.getByRole("button", { name: "XL", exact: true }));
-    expect(screen.getByRole("button", { name: "XL", exact: true })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: /^XL$/ }));
+    expect(screen.getByRole("button", { name: /^XL$/ })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "Try demo purchase" }));
     expect(screen.getByRole("status")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Back to the show" }));
     fireEvent.click(screen.getByRole("button", { name: "View First Light Hoodie" }));
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "S", exact: true })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^S$/ })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("completes a demo order without contacting an order or payment service", () => {
