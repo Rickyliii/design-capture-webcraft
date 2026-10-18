@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- [x] Remove the "Before the show" heading and its two cards (voice note, Fan rewards) from Show; the Forum and Rewards tabs already cover both.
 - [x] Rename the Show ticket link to "Get tickets" and reorder the bottom tabs to Show, Live, Rewards, Forum, Profile; verified in the preview at 390px.
 - [x] Selectively incorporate FanDrop-source.zip merchandise: imported hoodie/keychain images, product previews and local demo purchase; preserve current Before the show links, navigation, 22-second opening and phone sync.
 - Merchandise sample collection added directly to Show with product imagery and three named items; no checkout or invented prices.
