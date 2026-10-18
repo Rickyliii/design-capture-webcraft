@@ -52,7 +52,7 @@ export const ACTIVITY_KINDS = [
 ] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
-export const COMMANDS = ["violet", "blue", "rose", "gold", "custom", "team", "breathing", "aurora", "awakening", "stop"] as const;
+export const COMMANDS = ["violet", "blue", "rose", "gold", "custom", "team", "breathing", "aurora", "awakening", "pause", "resume", "stop"] as const;
 export type Command = (typeof COMMANDS)[number];
 export const isHex = (v: unknown): v is string => typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v);
 
@@ -104,9 +104,11 @@ export function displayFor(state: ShowState | null, own: string, nowMs: number):
       return { hex: mine, ...off, breathing: true };
     case "aurora":
       return { hex: mine, ...off, aurora: true };
+    case "awakening_paused":
     case "awakening": {
       const start = state.sequence_start_time ? Date.parse(state.sequence_start_time) : nowMs;
-      const p = awakeningPhase(Math.max(0, (nowMs - start) / 1000));
+      const at = state.mode === "awakening_paused" ? Date.parse(state.updated_at) : nowMs;
+      const p = awakeningPhase(Math.max(0, (at - start) / 1000));
       if (p === "done") return { hex: mine, ...off, message: "YOU ARE THE AFTERLIGHT." };
       return { hex: p === "own" ? mine : TEAMS[p].hex, ...off };
     }
@@ -116,8 +118,20 @@ export function displayFor(state: ShowState | null, own: string, nowMs: number):
 }
 
 /** Map a host command to the new show state fields. */
-export function stateForCommand(cmd: Command, now: Date, hex?: string) {
+export function stateForCommand(cmd: Command, now: Date, hex?: string, current?: ShowState | null) {
   const base = { updated_at: now.toISOString(), sequence_name: null as string | null, sequence_start_time: null as string | null };
+  if (cmd === "pause" || cmd === "resume") {
+    if (!current?.is_show_active || !current.sequence_start_time) throw new Error("No opening to pause or resume");
+    const start = Date.parse(current.sequence_start_time);
+    const pausedAt = Date.parse(current.updated_at);
+    if (!Number.isFinite(start) || !Number.isFinite(pausedAt)) throw new Error("Invalid opening time");
+    if (cmd === "pause") {
+      if (current.mode !== "awakening" || now.getTime() - start >= AWAKENING_LENGTH * 1000) throw new Error("Opening is not playing");
+      return { ...base, mode: "awakening_paused", global_color: null, is_show_active: true, sequence_name: current.sequence_name, sequence_start_time: new Date(Math.min(start, now.getTime())).toISOString() };
+    }
+    if (current.mode !== "awakening_paused") throw new Error("Opening is not paused");
+    return { ...base, mode: "awakening", global_color: null, is_show_active: true, sequence_name: current.sequence_name, sequence_start_time: new Date(start + now.getTime() - pausedAt).toISOString() };
+  }
   const on = (mode: string, global_color: string | null = null) => ({ ...base, mode, global_color, is_show_active: true });
   if (cmd === "stop") return { ...base, mode: "idle", global_color: null, is_show_active: false };
   if (cmd === "team") return on("team");

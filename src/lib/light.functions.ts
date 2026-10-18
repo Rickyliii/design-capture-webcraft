@@ -16,6 +16,7 @@ import {
   stateForCommand,
   type ActivityKind,
   type Command,
+  type ShowState,
 } from "./light";
 
 const admin = async () => (await import("@/integrations/supabase/client.server")).supabaseAdmin;
@@ -201,12 +202,11 @@ export const sendShowCommand = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     // Written as the signed-in admin; RLS also requires the admin role.
-    const { data: row, error } = await context.supabase
-      .from("show_state")
-      .update(stateForCommand(data.command, new Date(), data.hex))
-      .eq("event_id", LIGHT_EVENT_ID)
-      .select()
-      .single();
+    const { data: current, error: readError } = await context.supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).single();
+    if (readError || !current) throw new Error("Could not read the opening state");
+    const { data: row, error } = await context.supabase.from("show_state")
+      .update(stateForCommand(data.command, new Date(), data.hex, current as ShowState))
+      .eq("event_id", LIGHT_EVENT_ID).eq("updated_at", current.updated_at).select().single();
     if (error) throw new Error("Command failed");
     // Push the new state to every phone instantly; phones also watch the table and re-check as backups.
     try {

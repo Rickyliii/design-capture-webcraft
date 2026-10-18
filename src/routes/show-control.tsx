@@ -82,6 +82,7 @@ function describe(state: ShowState | null) {
   if (state.mode === "color") return `SOLID · ${state.global_color && state.global_color in TEAMS ? `ALL ${state.global_color.toUpperCase()}` : state.global_color}`;
   if (state.mode === "team") return "PERSONAL COLORS";
   if (state.mode === "awakening") return "THE AWAKENING";
+  if (state.mode === "awakening_paused") return "THE AWAKENING · PAUSED";
   return state.mode.toUpperCase();
 }
 
