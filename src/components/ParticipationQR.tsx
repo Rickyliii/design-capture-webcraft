@@ -4,11 +4,11 @@ import { Check, Copy, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { participationUrl } from "@/lib/participation";
 
-export function ParticipationQR() {
+export function ParticipationQR({ destination = "light" }: { destination?: "light" | "live" }) {
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  useEffect(() => { setUrl(participationUrl(window.location.origin)); }, []);
+  useEffect(() => { setUrl(participationUrl(window.location.origin, destination)); }, [destination]);
   return <section className="border-y border-current/20 py-6" aria-label="Phone participation QR code">
     <h2 className="flex items-center gap-2 font-display text-xl font-bold"><QrCode /> JOIN THE AWAKENING</h2>
     <div className="mt-4 flex flex-wrap items-center gap-6">
