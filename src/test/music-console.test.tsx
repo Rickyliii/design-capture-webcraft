@@ -1,69 +1,34 @@
 import { fireEvent, render, screen, waitFor, cleanup } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const calls = vi.hoisted(() => ({ start: vi.fn(), clock: vi.fn() }));
+import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
-vi.mock("@/lib/light.functions", () => ({ startMusicShow: calls.start, getShowClock: calls.clock }));
+vi.mock("@/lib/light.functions", () => ({ getShowClock: vi.fn().mockImplementation(() => Promise.resolve(Date.now())) }));
 import { MusicShowConsole } from "@/components/MusicShowConsole";
-describe("presenter music safety", () => {
-  beforeEach(() => {
-    // Tests exercise the disclosed music controls, not the initial presentation.
-    calls.start.mockReset(); calls.clock.mockReset(); calls.clock.mockResolvedValue(Date.now());
-    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
-    calls.start.mockResolvedValue({ mode: "music", is_show_active: true, updated_at: "now" });
-  });
-  afterEach(() => { cleanup(); vi.restoreAllMocks(); });
-  it("never starts a shared show without selected audio unless silent mode is explicit", () => {
-    render(<MusicShowConsole state={null} onState={vi.fn()} send={vi.fn()} />);
-    fireEvent.click(screen.getByText("Music show", { selector: "summary" }));
-    fireEvent.click(screen.getByRole("button", { name: "START MUSIC SHOW" }));
-    expect(calls.start).not.toHaveBeenCalled();
-    expect(calls.clock).not.toHaveBeenCalled();
-  });
-  it("preview is local and does not send a shared START command", async () => {
-    render(<MusicShowConsole state={null} onState={vi.fn()} send={vi.fn()} />);
-    fireEvent.click(screen.getByText("Music show", { selector: "summary" }));
-    fireEvent.click(screen.getByText("Advanced timing & silent test", { selector: "summary" }));
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "PREVIEW MUSIC + LIGHTS" }));
-    await waitFor(() => expect(calls.clock).toHaveBeenCalledOnce());
-    expect(calls.start).not.toHaveBeenCalled();
-  });
-  it("silent start persists the actual editable six-cue configuration", async () => {
-    render(<MusicShowConsole state={null} onState={vi.fn()} send={vi.fn()} />);
-    fireEvent.click(screen.getByText("Music show", { selector: "summary" }));
-    fireEvent.click(screen.getByText("Advanced timing & silent test", { selector: "summary" }));
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.change(screen.getByLabelText("THE DROP start seconds"), { target: { value: "25" } });
-    fireEvent.click(screen.getByRole("button", { name: "START MUSIC SHOW" }));
-    await waitFor(() => expect(calls.start).toHaveBeenCalledOnce());
-    expect(calls.start.mock.calls[0]?.[0].data.timeline).toMatchObject({ silent: true, cues: [0, 5, 11, 18, 25, 27], bpm: 120 });
-  });
-  it("STOP cancels an in-flight preparation before it can start phones", async () => {
-    let resolve: (n: number) => void = () => {};
-    calls.clock.mockImplementation(() => new Promise<number>(r => { resolve = r; }));
+import type { ShowState } from "@/lib/light";
+const state: ShowState = { event_id: "test", mode: "awakening", global_color: null, sequence_name: null, sequence_start_time: new Date(Date.now() - 5000).toISOString(), is_show_active: true, updated_at: new Date().toISOString() };
+afterEach(cleanup);
+describe("animation-only presenter controls", () => {
+  it("starts the shared opening", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByText("Music show", { selector: "summary" }));
-    fireEvent.click(screen.getByText("Advanced timing & silent test", { selector: "summary" }));
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "START MUSIC SHOW" }));
-    fireEvent.click(screen.getByRole("button", { name: "STOP" }));
-    resolve(Date.now());
-    await waitFor(() => expect(send).toHaveBeenCalledWith("stop", "STOP MUSIC SHOW"));
-    expect(calls.start).not.toHaveBeenCalled();
-  });
-  it("PLAY sends the shared opening command without requiring music", async () => {
-    const send = vi.fn().mockResolvedValue(undefined);
-    render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "PLAY" }));
+    fireEvent.click(screen.getByRole("button", { name: "START", exact: true }));
     await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "START OPENING ANIMATION"));
-    expect(calls.start).not.toHaveBeenCalled();
   });
-  it("REPLAY restarts the shared opening without requiring music", async () => {
+  it("pauses the shared opening rather than stopping it", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
-    render(<MusicShowConsole state={null} onState={vi.fn()} send={send} />);
-    fireEvent.click(screen.getByRole("button", { name: "REPLAY" }));
-    await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "REPLAY OPENING ANIMATION"));
-    expect(calls.start).not.toHaveBeenCalled();
+    render(<MusicShowConsole state={state} onState={vi.fn()} send={send} />);
+    fireEvent.click(screen.getByRole("button", { name: "PAUSE", exact: true }));
+    await waitFor(() => expect(send).toHaveBeenCalledWith("pause", "PAUSE OPENING ANIMATION"));
+  });
+  it("START resumes a paused opening", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    render(<MusicShowConsole state={{ ...state, mode: "awakening_paused" }} onState={vi.fn()} send={send} />);
+    fireEvent.click(screen.getByRole("button", { name: "START", exact: true }));
+    await waitFor(() => expect(send).toHaveBeenCalledWith("resume", "RESUME OPENING ANIMATION"));
+  });
+  it("restarts from zero through a fresh opening command", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    render(<MusicShowConsole state={state} onState={vi.fn()} send={send} />);
+    fireEvent.click(screen.getByRole("button", { name: "RESTART", exact: true }));
+    await waitFor(() => expect(send).toHaveBeenCalledWith("awakening", "RESTART OPENING ANIMATION"));
   });
 });
