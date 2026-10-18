@@ -70,7 +70,7 @@ export type ShowState = {
 };
 
 /** Presentation opening duration, anchored to one shared start timestamp. */
-export const AWAKENING_LENGTH = 22;
+export const AWAKENING_LENGTH = 15;
 export function awakeningPhase(elapsedSec: number): Team | "own" | "done" {
   if (elapsedSec >= AWAKENING_LENGTH) return "done";
   elapsedSec = elapsedSec * 27 / AWAKENING_LENGTH;
