@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Final presentation UX
-- [ ] Make the existing JOIN CONCERT SYNC primary after activation, add requested helper/connected text, and verify authorized presenter color changes and exit; UI-only.
+- [x] Make the existing JOIN CONCERT SYNC primary after activation and add requested helper/connected text; 14 tests, automatic build and simulated-phone activation → sync → authorized blue/rose changes → leave verified, with no runtime errors. UI-only; backend and Show Control unchanged.
 - [x] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity including legacy fresh links; 34 tests and simulated mobile creation, eight colors, four shapes, activation, modes, authorized four-color sync, exit and 22-second stage pause/resume verified. Backend and presenter commands unchanged; physical-phone QR access and browser chrome require a manual rehearsal.
 
 ## Done
