@@ -53,16 +53,12 @@ function LightPage() {
   const [stick, setStick] = useState(false);
   const [initialMode, setInitialMode] = useState<Mode>("solid");
   const [editColor, setEditColor] = useState(false);
-  const { fresh } = Route.useSearch();
-
   useEffect(() => {
-    // Demo mode: ?fresh=true starts a brand-new star every visit, so each
-    // QR scan walks through onboarding from the beginning.
-    if (fresh) localStorage.removeItem(ID_KEY);
+    // Reuse the saved identity, including visits through older demo links.
     const fid = fanId();
     setId(fid);
     getFan({ data: { fanId: fid } }).then(setFan).catch(() => {}).finally(() => setLoading(false));
-  }, [fresh]);
+  }, []);
 
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
   if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
@@ -126,8 +122,8 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
     <Shell>
       <Link to="/live" className="inline-flex items-center gap-1 font-mono text-xs opacity-70"><ArrowLeft className="h-3 w-3" /> FanDrop</Link>
       <p className="sticker mt-6 opacity-70">FanDrop Live Light</p>
-      <h1 className="mt-2 font-display text-5xl font-extrabold leading-none">BE PART OF THE LIGHT.</h1>
-      <p className="mt-3 opacity-80">Create your star and become part of tonight's opening.</p>
+      <h1 className="mt-2 font-display text-4xl font-extrabold leading-tight">1. Create your star</h1>
+      <p className="mt-3 opacity-80">Choose your name, star shape and color.</p>
       <form onSubmit={submit} className="mt-6 space-y-6">
         <label className="block">
           <span className="font-bold">Nickname</span>
@@ -162,9 +158,9 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
           </div>
         </div>
         {err && <p role="alert" className="text-sm">{err}</p>}
-        <button disabled={busy} className="w-full rounded-full py-4 font-display text-lg font-extrabold text-white" style={{ background: PALETTE[color].hex }}>
-          {busy ? "Creating…" : "Create my star ✦"}
-        </button>
+        <Button type="submit" disabled={busy} className="min-h-14 w-full font-display text-lg font-extrabold"><Sparkles />
+          {busy ? "Creating…" : "AWAKEN MY STAR"}
+        </Button>
         <p className="text-center font-mono text-[11px] opacity-50">No email, phone or real name needed.</p>
       </form>
     </Shell>
@@ -196,10 +192,9 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
         <p className="mt-1 font-mono text-sm tracking-widest">{info.label.toUpperCase()} {fan.star_type.toUpperCase()} · TEAM {TEAMS[info.team].label.toUpperCase()}</p>
         <p className="mt-3 text-sm opacity-90">You're part of tonight's constellation.</p>
       </div>
-      <h2 className="mt-6 font-display text-2xl font-bold">The Awakening</h2>
-      <p className="mt-2 text-sm opacity-80">Concert Sync lets the presenter change this page’s light with the music. It does not control your phone. Choose Solid or EXIT anytime.</p>
-      <Button onClick={() => onActivate(true)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Radio /> JOIN CONCERT SYNC</Button>
-      <Button variant="ghost" onClick={() => onActivate(false)} className="mt-3 min-h-12 w-full border border-background/30"><Sun /> MY LIGHT ONLY</Button>
+      <h2 className="mt-6 font-display text-2xl font-bold">2. Activate your light</h2>
+      <p className="mt-2 text-sm opacity-80">Your star is ready. Try Solid, Breathe or Wave, then join tonight's show.</p>
+      <Button onClick={() => onActivate(false)} className="mt-5 min-h-16 w-full whitespace-normal font-display text-lg font-bold"><Sun /> ACTIVATE MY LIGHT</Button>
       <Button variant="ghost" className="mt-3 min-h-12 w-full border border-background/30" onClick={onChangeColor}>EDIT STAR · COLOR & SHAPE</Button>
       <HomeScreenPrompt />
 
@@ -312,13 +307,13 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
       {wave && <div className="lightstick-wave pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
       {showOpening && <OpeningScene frame={opening} color={ownHex} />}
-      <div className="lightstick-header relative z-10 flex items-center justify-between gap-2 p-3">
+      <div className="lightstick-header relative z-10 flex flex-wrap items-center justify-between gap-2 p-3">
         <Button variant="ghost" onClick={onExit} aria-label="Exit lightstick" className="min-h-11 bg-foreground/35 px-3 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</Button>
         <Button variant="ghost" className="min-h-11 px-2 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>EDIT STAR</Button>
         <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 bg-foreground/35" aria-label="Fullscreen light" title="Fullscreen light" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}><Maximize className="h-4 w-4" /></Button>
         {mode === "sync" && (
-          <span className="flex items-center gap-1 rounded-full bg-black/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
-            {status === "live" ? <><Radio className="h-3 w-3 animate-pulse" /> LIVE</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}
+          <span role="status" className="flex basis-full items-center justify-center gap-1 rounded-md bg-foreground/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
+            {status === "live" ? <><Radio className="h-3 w-3" /> CONNECTED TO THE SHOW</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}
           </span>
         )}
       </div>
@@ -326,17 +321,20 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         {!showOpening && <div className="lightstick-star"><ConcertStar type={fan.star_type} className="h-44 w-44" /></div>}
         {mode === "sync" && status === "lost" && <p className="mt-6 rounded-2xl bg-black/30 px-4 py-2 font-bold">Lost connection. Holding your color — reconnecting.</p>}
         {mode === "sync" && status !== "lost" && waiting && (
-          <div className="mt-6 rounded-2xl bg-black/25 px-5 py-3 backdrop-blur"><p className="font-display text-2xl font-extrabold">CONNECTED TO THE AWAKENING</p><p className="text-sm opacity-90">Waiting for the music to begin.</p></div>
+          <div className="mt-6 rounded-md bg-foreground/25 px-5 py-3 backdrop-blur"><p className="font-display text-xl font-extrabold">YOUR LIGHT IS READY</p><p className="text-sm opacity-90">Waiting for tonight's show.</p></div>
         )}
         {!showOpening && message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
-      <div className="lightstick-modes relative grid grid-cols-4 gap-2 p-3">
-        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["wave", "Wave", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
+      <div className="lightstick-modes relative p-3">
+        {mode !== "sync" ? <div className="mb-3 text-center"><p className="mb-2 text-sm">3. Join Concert Sync</p><Button className="min-h-12 w-full whitespace-normal" onClick={() => setMode("sync")}><Radio /> JOIN CONCERT SYNC</Button><p className="mt-2 text-xs">Let tonight's show control your light.</p></div> : <Button variant="ghost" className="mb-3 min-h-12 w-full border border-background/40 bg-foreground/35" onClick={() => setMode("solid")}><WifiOff /> LEAVE CONCERT SYNC</Button>}
+        <div className="grid grid-cols-3 gap-2">
+        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["wave", "Wave", Sparkles]] as const).map(([m, l, Icon]) => (
           <Button variant="ghost" key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
             className={`h-14 min-w-0 flex-col gap-1 px-1 text-[11px] font-bold backdrop-blur ${mode === m ? "bg-background/90 text-foreground" : "bg-foreground/35"}`}>
             <Icon className="h-5 w-5" />{l}
           </Button>
         ))}
+        </div>
       </div>
     </div>
   );

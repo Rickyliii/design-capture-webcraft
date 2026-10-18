@@ -1,5 +1,8 @@
 # Roadmap
 
+## Final presentation UX
+- [ ] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity, and verify existing effects and stage without changing backend or presenter commands.
+
 ## Done
 - [x] Remove the "T-minus 3d" badge from the top-right of the app header; the fanDrop logo stays on the left and no gap remains, checked on Show, Live and Rewards.
 - [x] Replace Aurora with Wave Mode: a bright light band sweeps across the screen every 3.5s over a deep-blue base, tinted by the fan's own Star Color, while the centre star stays fixed; the presenter button reads START WAVE. Reduced-motion preference is honoured and 17 tests passed.
