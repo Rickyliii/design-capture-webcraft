@@ -27,10 +27,9 @@ export default function LiveFeatures({gateScanned=false,profile,event={id:'demo-
  {id:'ask',title:`Ask ${event.artist}`,sub:'Your questions. A little closer to the artist.',Icon:Mic,button:'Ask a question'},
   {id:'encore',title:'The Hidden Encore',sub:'One rare song. Chosen by tonight’s fans.',Icon:Music2,button:'Vote for the encore'}].map((drop,i)=>{
     const dropLocked=locked&&drop.id!=='awakening';
-    return <article className={`fd-live-drop flex-wrap fd-drop-${drop.id} ${dropLocked?'fd-locked':''}`} key={drop.id}>
+    return <article className={`fd-live-drop fd-drop-${drop.id} ${dropLocked?'fd-locked':''}`} key={drop.id}>
       <div className="fd-drop-icon">{dropLocked?<Lock size={24}/>:<drop.Icon size={26}/>}</div>
       <div className="fd-drop-copy"><small>DROP {String(i+1).padStart(2,'0')} · {dropLocked?'LOCKED':'OPEN'}</small><h3>{drop.title}</h3><p>{dropLocked?'Locked until the gate scan':drop.sub}</p>{drop.id==='awakening'?<Button onClick={()=>setActivity("awakening")}>ENTER THE AWAKENING <ArrowUpRight size={15}/></Button>:<button onClick={()=>locked?onScan?.():setActivity(drop.id)}>{locked?'Tap to scan & unlock':drop.button}{!locked&&<ArrowUpRight size={15}/>}</button>}</div>
-      {drop.id==='awakening'&&<div className="w-full min-w-0 bg-foreground p-4 text-background"><ParticipationQR /></div>}
     </article>;
   })}
  </div>
