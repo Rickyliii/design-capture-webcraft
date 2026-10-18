@@ -52,7 +52,7 @@ export const ACTIVITY_KINDS = [
 ] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
-export const COMMANDS = ["violet", "blue", "rose", "gold", "custom", "team", "breathing", "aurora", "awakening", "pause", "resume", "stop"] as const;
+export const COMMANDS = ["violet", "blue", "rose", "gold", "custom", "team", "breathing", "wave", "awakening", "pause", "resume", "stop"] as const;
 export type Command = (typeof COMMANDS)[number];
 export const isHex = (v: unknown): v is string => typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v);
 
@@ -80,12 +80,12 @@ export function awakeningPhase(elapsedSec: number): Team | "own" | "done" {
   return "done";
 }
 
-export type Display = { hex: string; breathing: boolean; aurora: boolean; message?: string; waiting?: boolean; halo?: boolean };
+export type Display = { hex: string; breathing: boolean; wave: boolean; message?: string; waiting?: boolean; halo?: boolean };
 
 /** What a synced phone should show for a given show state. */
 export function displayFor(state: ShowState | null, own: string, nowMs: number): Display {
   const mine = colorInfo(own).hex;
-  const off = { breathing: false, aurora: false };
+  const off = { breathing: false, wave: false };
   if (!state || !state.is_show_active) return { hex: mine, ...off, waiting: true };
   switch (state.mode) {
     case "music": {
@@ -102,8 +102,8 @@ export function displayFor(state: ShowState | null, own: string, nowMs: number):
     }
     case "breathing":
       return { hex: mine, ...off, breathing: true };
-    case "aurora":
-      return { hex: mine, ...off, aurora: true };
+    case "wave":
+      return { hex: mine, ...off, wave: true };
     case "awakening_paused":
     case "awakening": {
       const start = state.sequence_start_time ? Date.parse(state.sequence_start_time) : nowMs;
@@ -136,7 +136,7 @@ export function stateForCommand(cmd: Command, now: Date, hex?: string, current?:
   if (cmd === "stop") return { ...base, mode: "idle", global_color: null, is_show_active: false };
   if (cmd === "team") return on("team");
   if (cmd === "breathing") return on("breathing");
-  if (cmd === "aurora") return on("aurora");
+  if (cmd === "wave") return on("wave");
   if (cmd === "custom") {
     if (!isHex(hex)) throw new Error("Invalid color");
     return on("color", hex.toUpperCase());

@@ -40,7 +40,7 @@ function blend(a: string, b: string, p: number) {
 }
 export function musicDisplay(t: MusicTimeline, elapsed: number, own: string, team: string) {
   const cue = musicCue(t, elapsed);
-  const base = { breathing: false, aurora: false, cue, waiting: cue < 0 };
+  const base = { breathing: false, wave: false, cue, waiting: cue < 0 };
   if (cue < 0) return { ...base, hex: own };
   if (cue === 6) return { ...base, hex: own, message: "YOU ARE THE AFTERLIGHT." };
   const start = t.cues[cue] ?? 0;

@@ -73,7 +73,7 @@ const COLOR_BUTTONS: { cmd: Command; label: string; bg: string }[] = TEAM_IDS.ma
 const SHOW_BUTTONS: { cmd: Command; label: string }[] = [
   { cmd: "team", label: "RESTORE PERSONAL COLORS" },
   { cmd: "breathing", label: "START BREATHING" },
-  { cmd: "aurora", label: "START AURORA" },
+  { cmd: "wave", label: "START WAVE" },
 ];
 
 function describe(state: ShowState | null) {

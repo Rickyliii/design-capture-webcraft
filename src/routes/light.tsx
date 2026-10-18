@@ -221,7 +221,7 @@ function StarHome({ fan, fanId, setFan, onActivate, onChangeColor }: { fan: Ligh
   );
 }
 
-type Mode = "solid" | "breathing" | "aurora" | "sync";
+type Mode = "solid" | "breathing" | "wave" | "sync";
 function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan; initialMode: Mode; onExit: () => void; onChangeColor: () => void }) {
   const ownHex: string = colorInfo(fan.star_color).hex;
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -287,12 +287,12 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
     return () => clearInterval(t);
   }, [mode, state?.mode]);
 
-  let hex: string = ownHex, breathing = mode === "breathing", aurora = mode === "aurora", message: string | undefined, waiting = false;
+  let hex: string = ownHex, breathing = mode === "breathing", wave = mode === "wave", message: string | undefined, waiting = false;
   if (mode === "sync") {
     if (status === "lost" && state?.mode !== "music") hex = lastGood.current;
     else {
       const d = displayFor(state, fan.star_color, now);
-      hex = d.hex; breathing = d.breathing; aurora = d.aurora; message = d.message; waiting = !!d.waiting;
+      hex = d.hex; breathing = d.breathing; wave = d.wave; message = d.message; waiting = !!d.waiting;
       lastGood.current = hex;
     }
   }
@@ -302,7 +302,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
   useLightSurface(showOpening ? "var(--foreground)" : hex);
   return (
     <div className="lightstick fixed inset-0 z-50 flex flex-col overflow-hidden text-background" style={{ ["--glow" as string]: hex }}>
-      {aurora && <div className="lightstick-aurora pointer-events-none absolute inset-0" />}
+      {wave && <div className="lightstick-wave pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
       {showOpening && <OpeningScene frame={opening} color={ownHex} />}
       <div className="lightstick-header relative z-10 flex items-center justify-between gap-2 p-3">
@@ -324,7 +324,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         {!showOpening && message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
       <div className="lightstick-modes relative grid grid-cols-4 gap-2 p-3">
-        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["aurora", "Aurora", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
+        {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["wave", "Wave", Sparkles], ["sync", "Concert Sync", Radio]] as const).map(([m, l, Icon]) => (
           <Button variant="ghost" key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
             className={`h-14 min-w-0 flex-col gap-1 px-1 text-[11px] font-bold backdrop-blur ${mode === m ? "bg-background/90 text-foreground" : "bg-foreground/35"}`}>
             <Icon className="h-5 w-5" />{l}
