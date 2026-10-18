@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Artist view
-- [ ] Add Artists as the final tab and a read-only participation view using existing authorized live statistics; distinguish tracked metrics from unavailable activity/retention data and verify navigation plus live updates.
+- [x] Add Artists as the final tab with existing admin-authorized participation counts, activation rate, activity counts and crowd colors; post-show return is explicitly untracked. Six tests passed; signed-out entry, real authorized stats, five-second refresh, live device presence, 390px layout and automatic build verified. No changes to permissions, data or Show Control.
 
 ## Final presentation UX
 - [x] Reorder the bottom tabs to Show, Forum, Rewards, Profile, Live; nav order checked in the preview at 390px and Live still opens.
