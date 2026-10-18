@@ -17,7 +17,10 @@ import {
 import { changeStarAppearance, getFan, getShowClock, getTeamBoard, recordActivity, registerFan, type LightFan } from "@/lib/light.functions";
 
 export const Route = createFileRoute("/light")({
-  validateSearch: (search: Record<string, unknown>): { concert?: boolean } => ({ concert: search["concert"] === true || search["concert"] === "true" }),
+  validateSearch: (search: Record<string, unknown>): { concert?: boolean; fresh?: boolean } => ({
+    concert: search["concert"] === true || search["concert"] === "true",
+    fresh: search["fresh"] === true || search["fresh"] === "true",
+  }),
   head: () => ({
     meta: [
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
@@ -50,12 +53,16 @@ function LightPage() {
   const [stick, setStick] = useState(false);
   const [initialMode, setInitialMode] = useState<Mode>("solid");
   const [editColor, setEditColor] = useState(false);
+  const { fresh } = Route.useSearch();
 
   useEffect(() => {
+    // Demo mode: ?fresh=true starts a brand-new star every visit, so each
+    // QR scan walks through onboarding from the beginning.
+    if (fresh) localStorage.removeItem(ID_KEY);
     const fid = fanId();
     setId(fid);
     getFan({ data: { fanId: fid } }).then(setFan).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [fresh]);
 
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
   if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
