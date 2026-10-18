@@ -1,5 +1,8 @@
 # Roadmap
 
+## Artist view
+- [ ] Add Artists as the final tab and a read-only participation view using existing authorized live statistics; distinguish tracked metrics from unavailable activity/retention data and verify navigation plus live updates.
+
 ## Final presentation UX
 - [x] Reorder the bottom tabs to Show, Forum, Rewards, Profile, Live; nav order checked in the preview at 390px and Live still opens.
 - [x] Make the existing JOIN CONCERT SYNC primary after activation and add requested helper/connected text; 14 tests, automatic build and simulated-phone activation → sync → authorized blue/rose changes → leave verified, with no runtime errors. UI-only; backend and Show Control unchanged.
