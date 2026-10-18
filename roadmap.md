@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Final presentation UX
+- [x] Reorder the bottom tabs to Show, Forum, Rewards, Profile, Live; nav order checked in the preview at 390px and Live still opens.
 - [x] Make the existing JOIN CONCERT SYNC primary after activation and add requested helper/connected text; 14 tests, automatic build and simulated-phone activation → sync → authorized blue/rose changes → leave verified, with no runtime errors. UI-only; backend and Show Control unchanged.
 - [x] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity including legacy fresh links; 34 tests and simulated mobile creation, eight colors, four shapes, activation, modes, authorized four-color sync, exit and 22-second stage pause/resume verified. Backend and presenter commands unchanged; physical-phone QR access and browser chrome require a manual rehearsal.
 
