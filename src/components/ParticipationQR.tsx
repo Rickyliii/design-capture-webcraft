@@ -17,7 +17,8 @@ export function ParticipationQR() {
       </div>
       <div className="min-w-0 flex-1 basis-52 space-y-3">
         <p>Scan on your phone</p>
-        <p className="text-sm opacity-80">Create your star, then tap JOIN CONCERT SYNC. Only this page’s light follows the show. Exit or choose Solid anytime.</p>
+        <p className="text-sm opacity-80">No app download needed.</p>
+        <Button asChild disabled={!url}><a href={url || undefined}>JOIN LIVE</a></Button>
         {url && <a href={url} className="block break-all font-mono text-xs underline">{url}</a>}
         <Button variant="secondary" disabled={!url} onClick={async () => {
           try { await navigator.clipboard.writeText(url); setCopied(true); setError(""); }
