@@ -1,10 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { openingFrame } from "@/lib/opening";
 import { DEFAULT_TIMELINE } from "@/lib/music-show";
-import type { ShowState } from "@/lib/light";
+import { stateForCommand, type ShowState } from "@/lib/light";
 const start = Date.parse("2026-10-17T22:00:00Z");
 const state: ShowState = { event_id: "test", mode: "music", global_color: null, sequence_name: null, sequence_start_time: new Date(start).toISOString(), is_show_active: true, updated_at: new Date(start).toISOString(), music_timeline: DEFAULT_TIMELINE };
 describe("shared opening choreography", () => {
+  it("pause freezes the same frame for stage and late-joining phones", () => {
+    const opening = { ...state, mode: "awakening" };
+    const paused = { ...opening, ...stateForCommand("pause", new Date(start + 7000), undefined, opening) };
+    expect(openingFrame(paused, start + 8000).playbackSeconds).toBe(7);
+    expect(openingFrame(paused, start + 20000)).toEqual(openingFrame(paused, start + 8000));
+  });
+  it("resume excludes paused time from the 22-second duration", () => {
+    const opening = { ...state, mode: "awakening" };
+    const paused = { ...opening, ...stateForCommand("pause", new Date(start + 7000), undefined, opening) };
+    const resumed = { ...paused, ...stateForCommand("resume", new Date(start + 17000), undefined, paused) };
+    expect(openingFrame(resumed, start + 17000).playbackSeconds).toBe(7);
+    expect(openingFrame(resumed, start + 31999).complete).toBe(false);
+    expect(openingFrame(resumed, start + 32000)).toMatchObject({ complete: true, playbackSeconds: 22 });
+  });
   it("presenter opening runs all five uploaded phases for exactly 22 seconds", () => {
     const opening = { ...state, mode: "awakening", music_timeline: null };
     expect([0, 7, 12, 16.5, 19].map(s => openingFrame(opening, start + s * 1000).phase)).toEqual(["darkness", "awakening", "convergence", "supernova", "reveal"]);

@@ -21,7 +21,7 @@
 - [x] Memory cards: one per show — Justin Bieber (Justice Tour 2022), Taylor Swift (Eras 2024), Drake (Blur 2023), plus tonight; dates/seats invented
 
 ## Open (new)
-- [ ] Replace presenter music controls with START / PAUSE / RESTART for the shared 22-second opening; verify pause and resume on stage.
+- [ ] Replace presenter music controls with START / PAUSE / RESTART for the shared 22-second opening; retain and verify participant counts and Manual lighting alongside stage pause/resume.
 - [x] Remove duplicate Awakening shortcut, highlight the exclusive activity with cobalt/pink and subtle motion, rename its entry MY INTERACTIVE LIGHTSTICK and point its QR to Live; four link tests and desktop/mobile navigation checks passed.
 - [x] Revert the rejected directly-visible Live QR addition; retain the existing participant QR inside the Awakening dialog.
 - [x] Shorten the presentation opening from 27 to 15 seconds, preserving all phases and PLAY/STOP/REPLAY; 20 tests passed and authorized stage playback, reveal, completion, replay and stop verified. Editable music timelines remain unchanged.
