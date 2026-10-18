@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { AppShell } from "@/components/AppShell";
 import { ExclusiveMerch } from "@/components/ExclusiveMerch";
 import { isGateScanned, setGateScanned } from "@/lib/gate";
-import { MessageCircle, Gift, ArrowRight, Ticket, X, ScanLine } from "lucide-react";
+import { ArrowRight, Ticket, X, ScanLine } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,10 +20,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const next = [
-  { to: "/messages", icon: MessageCircle, title: "Justin sent a voice note", sub: "Rehearsal warm-up · 2m ago", tone: "bg-accent text-accent-foreground" },
-  { to: "/rewards", icon: Gift, title: "Fan rewards", sub: "Stage 1 of 4 · unlock your next reward", tone: "bg-primary text-primary-foreground" },
-] as const;
 
 function Index() {
   const [showPass, setShowPass] = useState(false);
@@ -69,21 +65,6 @@ function Index() {
 
       <ExclusiveMerch />
 
-      <h2 className="mb-3 mt-8 text-xl font-extrabold">Before the show</h2>
-      <div className="space-y-3">
-        {next.map(({ to, icon: Icon, title, sub, tone }) => (
-          <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl bg-card p-3 pop-sm press">
-            <span className={`grid h-12 w-12 place-items-center rounded-xl ${tone}`}>
-              <Icon className="h-5 w-5" />
-            </span>
-            <span className="flex-1">
-              <span className="block font-bold">{title}</span>
-              <span className="block text-sm text-muted-foreground">{sub}</span>
-            </span>
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-        ))}
-      </div>
 
       {showPass && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 p-6" onClick={() => setShowPass(false)}>
