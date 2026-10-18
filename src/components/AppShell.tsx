@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Home, MessagesSquare, Gift, IdCard, Radio } from "lucide-react";
 
-const tabs = [
+export const tabs = [
   { to: "/", label: "Show", icon: Home },
   { to: "/messages", label: "Forum", icon: MessagesSquare },
   { to: "/rewards", label: "Rewards", icon: Gift },
