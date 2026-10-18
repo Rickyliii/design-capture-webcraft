@@ -1,0 +1,12 @@
+{
+  "source": "FanDrop-source.zip",
+  "mode": "selective-merge",
+  "capabilities": [
+    { "capability": "Exclusive merchandise and demo purchase", "source": "src/components/ExclusiveMerch.tsx", "outcome": "merge", "status": "pending", "next_action": "Import product assets and verify both demo flows." },
+    { "capability": "Show page and navigation changes", "source": "src/routes/index.tsx and src/components/AppShell.tsx", "outcome": "merge", "status": "pending", "next_action": "Apply uploaded Show layout and tab order." },
+    { "capability": "Product image bytes", "source": "src/assets/merch-hoodie.jpg and merch-keychain.jpg", "outcome": "merge", "status": "pending", "next_action": "Upload to project asset hosting." },
+    { "capability": "Existing auth, schema, records, fan identity and authorization", "source": "Existing Lovable Cloud application", "outcome": "preserve", "status": "unchanged", "next_action": "Do not overwrite with older archive files; no new record export or schema supplied." },
+    { "capability": "Stage opening, presenter control, phone sync, installation and memory features", "source": "Existing application", "outcome": "preserve", "status": "pending", "next_action": "Keep current implementation and run relevant regressions." },
+    { "capability": "Payments, external providers, callbacks, webhooks, schedules and secrets", "source": "Merchandise call sites", "outcome": "not-required", "status": "inspected", "next_action": "Demo is local state only; no real order, payment or fulfillment." }
+  ]
+}
