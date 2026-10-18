@@ -12,6 +12,7 @@ import { useLightSurface } from "@/hooks/use-light-surface";
 import { HomeScreenPrompt } from "@/components/HomeScreenPrompt";
 import { GoldenFinale } from "@/components/GoldenFinale";
 import { GOLDEN_FINALE_MS, isNewGoldCommand } from "@/lib/golden-finale";
+import { lightEntryId } from "@/lib/light-identity";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -41,14 +42,9 @@ export const Route = createFileRoute("/light")({
   component: LightPage,
 });
 
-const ID_KEY = "fandrop-light-fan-id";
-function fanId() {
-  let id = localStorage.getItem(ID_KEY);
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem(ID_KEY, id); }
-  return id;
-}
-
 function LightPage() {
+  const { fresh } = Route.useSearch();
+  const entryId = useRef<string | null>(null);
   const [id, setId] = useState<string | null>(null);
   const [fan, setFan] = useState<LightFan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,14 +52,15 @@ function LightPage() {
   const [initialMode, setInitialMode] = useState<Mode>("solid");
   const [editColor, setEditColor] = useState(false);
   useEffect(() => {
-    // Reuse the saved identity, including visits through older demo links.
-    const fid = fanId();
+    const fid = entryId.current ?? lightEntryId(localStorage, fresh === true, () => crypto.randomUUID());
+    entryId.current = fid;
     setId(fid);
+    if (fresh) { setLoading(false); return; }
     getFan({ data: { fanId: fid } }).then(setFan).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [fresh]);
 
   if (loading || !id) return <Shell><p className="text-center font-mono text-sm opacity-70">Finding your star…</p></Shell>;
-  if (!fan) return <Onboarding fanId={id} onDone={setFan} />;
+  if (!fan) return <Onboarding fanId={id} fresh={fresh === true} onDone={setFan} />;
   if (editColor) return <StarEditor fan={fan} onCancel={() => setEditColor(false)} onSave={next => { setFan(next); setEditColor(false); }} />;
   if (stick) return <Lightstick fan={fan} initialMode={initialMode} onExit={() => setStick(false)} onChangeColor={() => setEditColor(true)} />;
   return <StarHome fan={fan} fanId={id} setFan={setFan} onChangeColor={() => setEditColor(true)} onActivate={async (sync: boolean) => {
@@ -101,7 +98,7 @@ function StarEditor({ fan, onCancel, onSave }: { fan: LightFan; onCancel: () => 
   </Shell>;
 }
 
-function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) => void }) {
+function Onboarding({ fanId, fresh, onDone }: { fanId: string; fresh: boolean; onDone: (f: LightFan) => void }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState<PaletteColor>("electric_violet");
   const [type, setType] = useState<StarType>("Nova");
@@ -109,9 +106,10 @@ function Onboarding({ fanId, onDone }: { fanId: string; onDone: (f: LightFan) =>
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   useEffect(() => {
+    if (fresh) return;
     const p = loadPass();
     if (p?.name) setName(p.name);
-  }, []);
+  }, [fresh]);
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return setErr("Give your star a nickname.");
