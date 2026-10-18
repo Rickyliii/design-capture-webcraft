@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as LightRouteImport } from './routes/light'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as MessagesRouteImport } from './routes/messages'
@@ -23,6 +24,11 @@ import { Route as PassMemoryEventIdRouteImport } from './routes/pass_.memory.$ev
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtistsRoute = ArtistsRouteImport.update({
+  id: '/artists',
+  path: '/artists',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LightRoute = LightRouteImport.update({
@@ -73,6 +79,7 @@ const PassMemoryEventIdRoute = PassMemoryEventIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/artists': typeof ArtistsRoute
   '/light': typeof LightRoute
   '/live': typeof LiveRoute
   '/messages': typeof MessagesRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/artists': typeof ArtistsRoute
   '/light': typeof LightRoute
   '/live': typeof LiveRoute
   '/messages': typeof MessagesRoute
@@ -98,6 +106,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/artists': typeof ArtistsRoute
   '/light': typeof LightRoute
   '/live': typeof LiveRoute
   '/messages': typeof MessagesRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/artists'
     | '/light'
     | '/live'
     | '/messages'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/artists'
     | '/light'
     | '/live'
     | '/messages'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/artists'
     | '/light'
     | '/live'
     | '/messages'
@@ -149,6 +161,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArtistsRoute: typeof ArtistsRoute
   LightRoute: typeof LightRoute
   LiveRoute: typeof LiveRoute
   MessagesRoute: typeof MessagesRoute
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artists': {
+      id: '/artists'
+      path: '/artists'
+      fullPath: '/artists'
+      preLoaderRoute: typeof ArtistsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/light': {
@@ -237,6 +257,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArtistsRoute: ArtistsRoute,
   LightRoute: LightRoute,
   LiveRoute: LiveRoute,
   MessagesRoute: MessagesRoute,
