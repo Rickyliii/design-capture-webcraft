@@ -47,7 +47,7 @@ export const MemoryCard = forwardRef<HTMLDivElement, { event: ShowEvent; memory:
             {!compact && memory.message && <p className="font-display text-lg italic leading-snug break-words">“{memory.message}”</p>}
             {!compact && (
               <div className="flex items-center justify-between border-t border-background/30 pt-2">
-                <span className="font-display text-sm font-extrabold">fan<span className="text-accent">drop</span></span>
+                <span className="font-display text-sm font-extrabold">Fan<span className="text-accent">Drop</span></span>
                 <span className="sticker opacity-70">Seat {event.seat}</span>
               </div>
             )}

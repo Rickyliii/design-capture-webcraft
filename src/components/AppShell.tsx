@@ -15,7 +15,7 @@ export function AppShell({ title, kicker, children }: { title: string; kicker: s
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b-2 bg-background px-5 py-3">
         <span className="font-display text-2xl font-extrabold">
-          fan<span className="text-accent">drop</span>
+          Fan<span className="text-accent">Drop</span>
         </span>
 
       </header>
