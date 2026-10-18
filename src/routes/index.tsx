@@ -63,7 +63,7 @@ function Index() {
       </button>
 
       <Link to="/tickets" className="mt-4 flex items-center justify-between rounded-2xl bg-accent p-4 font-extrabold text-accent-foreground pop-sm press">
-        <span className="flex items-center gap-2"><Ticket className="h-5 w-5" /> Get tickets for a friend</span>
+        <span className="flex items-center gap-2"><Ticket className="h-5 w-5" /> Get tickets</span>
         <ArrowRight className="h-5 w-5" />
       </Link>
 
