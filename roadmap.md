@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Golden finale
+- [ ] Move Live immediately after Show, preserving Forum, Rewards, Profile and Artists relative order.
 - [ ] Add a 2–3 second non-blocking ALL GOLD celebration for new commands only; verify duplicate reads, refresh, reduced motion and existing manual controls without protocol changes.
 
 ## Artist view
