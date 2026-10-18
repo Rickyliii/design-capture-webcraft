@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Final presentation UX
-- [ ] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity, and verify existing effects and stage without changing backend or presenter commands.
+- [x] Prioritize star/lightstick entry, clarify create → activate → sync, preserve saved star identity including legacy fresh links; 34 tests and simulated mobile creation, eight colors, four shapes, activation, modes, authorized four-color sync, exit and 22-second stage pause/resume verified. Backend and presenter commands unchanged; physical-phone QR access and browser chrome require a manual rehearsal.
 
 ## Done
 - [x] Remove the "T-minus 3d" badge from the top-right of the app header; the fanDrop logo stays on the left and no gap remains, checked on Show, Live and Rewards.
