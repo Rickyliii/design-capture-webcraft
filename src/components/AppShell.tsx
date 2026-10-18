@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Home, MessagesSquare, Gift, IdCard, Radio } from "lucide-react";
+import { Home, MessagesSquare, Gift, IdCard, Radio, BarChart3 } from "lucide-react";
 
 export const tabs = [
   { to: "/", label: "Show", icon: Home },
@@ -8,6 +8,7 @@ export const tabs = [
   { to: "/rewards", label: "Rewards", icon: Gift },
   { to: "/pass", label: "Profile", icon: IdCard },
   { to: "/live", label: "Live", icon: Radio },
+  { to: "/artists", label: "Artists", icon: BarChart3 },
 ] as const;
 
 export function AppShell({ title, kicker, children }: { title: string; kicker: string; children: ReactNode }) {
@@ -25,7 +26,7 @@ export function AppShell({ title, kicker, children }: { title: string; kicker: s
         {children}
       </main>
       <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md px-4 pb-4">
-        <div className="grid grid-cols-5 rounded-3xl bg-card p-1.5 pop">
+        <div className="grid grid-cols-6 rounded-3xl bg-card p-1.5 pop">
           {tabs.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}

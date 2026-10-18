@@ -1,5 +1,9 @@
 # Roadmap
 
+## Artist view
+- [x] Remove artist sign-in and expose only anonymous aggregate participation counts publicly; Show Control authorization unchanged. Signed-out real counts, five-second updates and 390px layout verified without runtime errors.
+- [x] Add Artists as the final tab with existing admin-authorized participation counts, activation rate, activity counts and crowd colors; post-show return is explicitly untracked. Six tests passed; signed-out entry, real authorized stats, five-second refresh, live device presence, 390px layout and automatic build verified. No changes to permissions, data or Show Control.
+
 ## Final presentation UX
 - [x] Reorder the bottom tabs to Show, Forum, Rewards, Profile, Live; nav order checked in the preview at 390px and Live still opens.
 - [x] Make the existing JOIN CONCERT SYNC primary after activation and add requested helper/connected text; 14 tests, automatic build and simulated-phone activation → sync → authorized blue/rose changes → leave verified, with no runtime errors. UI-only; backend and Show Control unchanged.
