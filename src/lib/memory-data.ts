@@ -3,6 +3,9 @@ import yukon from "@/assets/memory-yukon.jpg.asset.json";
 import sorry from "@/assets/memory-sorry.jpg.asset.json";
 import baby from "@/assets/memory-baby.jpg.asset.json";
 import ghost from "@/assets/memory-ghost.jpg.asset.json";
+import cruelSummer from "@/assets/memory-cruel-summer.jpg.asset.json";
+import loveStory from "@/assets/memory-love-story.jpg.asset.json";
+import antiHero from "@/assets/memory-anti-hero.jpg.asset.json";
 
 export type Song = { id: string; artist: string; title: string; vibe: string; image: string };
 
@@ -13,9 +16,9 @@ export const SONGS: Song[] = [
   { id: "sorry", artist: "Justin Bieber", title: "Sorry", vibe: "Dramatic crimson", image: sorry.url },
   { id: "baby", artist: "Justin Bieber", title: "Baby", vibe: "Golden throwback", image: baby.url },
   { id: "ghost", artist: "Justin Bieber", title: "Ghost", vibe: "Purple & pink euphoria", image: ghost.url },
-  { id: "ts-cruel-summer", artist: "Taylor Swift", title: "Cruel Summer", vibe: "Purple & pink euphoria", image: ghost.url },
-  { id: "ts-love-story", artist: "Taylor Swift", title: "Love Story", vibe: "Golden throwback", image: baby.url },
-  { id: "ts-anti-hero", artist: "Taylor Swift", title: "Anti-Hero", vibe: "Dreamy sparkle", image: yukon.url },
+  { id: "ts-cruel-summer", artist: "Taylor Swift", title: "Cruel Summer", vibe: "Purple & pink euphoria", image: cruelSummer.url },
+  { id: "ts-love-story", artist: "Taylor Swift", title: "Love Story", vibe: "Golden throwback", image: loveStory.url },
+  { id: "ts-anti-hero", artist: "Taylor Swift", title: "Anti-Hero", vibe: "Dreamy sparkle", image: antiHero.url },
   { id: "dr-gods-plan", artist: "Drake", title: "God's Plan", vibe: "Dramatic crimson", image: sorry.url },
   { id: "dr-one-dance", artist: "Drake", title: "One Dance", vibe: "Colour explosion", image: peaches.url },
   { id: "dr-hotline-bling", artist: "Drake", title: "Hotline Bling", vibe: "Purple & pink euphoria", image: ghost.url },
