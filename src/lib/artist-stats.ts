@@ -30,6 +30,12 @@ export function activationRate(stats: ParticipationStats): number | null {
   return stats.registered > 0 ? Math.round(stats.activated / stats.registered * 100) : null;
 }
 
+/** Post-show engagement proxy, not a measurement of repeat visits. */
+export function audienceRetentionRate(stats: ParticipationStats): number | null {
+  if (stats.registered <= 0 || !stats.afterShow) return null;
+  return Math.round(stats.afterShow.memoryCards / stats.registered * 100);
+}
+
 export function participationActivities(stats: ParticipationStats) {
   return [
     { label: "Lightstick activated", count: stats.activated },
