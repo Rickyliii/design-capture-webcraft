@@ -1,5 +1,9 @@
 # Roadmap
 
+## Golden finale
+- [x] Move Live immediately after Show: Show, Live, Forum, Rewards, Profile, Artists; tests and mobile navigation verified.
+- [x] Add a 2.8-second non-blocking ALL GOLD celebration for newer commands after a baseline read; reset baseline on connection loss/wake. Sixteen tests and real authorized browser commands verified Blue, Rose, Gold, repeated Gold, no polling/refresh replay, reduced motion, solid gold afterward, restore, STOP and Exit. Automatic build passed; physical phones not tested.
+
 ## Artist view
 - [x] Remove artist sign-in and expose only anonymous aggregate participation counts publicly; Show Control authorization unchanged. Signed-out real counts, five-second updates and 390px layout verified without runtime errors.
 - [x] Add Artists as the final tab with existing admin-authorized participation counts, activation rate, activity counts and crowd colors; post-show return is explicitly untracked. Six tests passed; signed-out entry, real authorized stats, five-second refresh, live device presence, 390px layout and automatic build verified. No changes to permissions, data or Show Control.

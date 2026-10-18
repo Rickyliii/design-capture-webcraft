@@ -10,6 +10,8 @@ import { OpeningScene } from "@/components/OpeningScene";
 import { openingFrame } from "@/lib/opening";
 import { useLightSurface } from "@/hooks/use-light-surface";
 import { HomeScreenPrompt } from "@/components/HomeScreenPrompt";
+import { GoldenFinale } from "@/components/GoldenFinale";
+import { GOLDEN_FINALE_MS, isNewGoldCommand } from "@/lib/golden-finale";
 import {
   LIGHT_EVENT_ID, SHOW_BROADCAST_CHANNEL, PALETTE, PALETTE_IDS, PRESENCE_CHANNEL, STAR_TYPES, TEAMS, TEAM_IDS, colorInfo, displayFor,
   type PaletteColor, type ShowState, type StarType, type Team,
@@ -232,6 +234,13 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
   const [now, setNow] = useState(Date.now());
   const lastGood = useRef<string>(ownHex);
   const clockOffset = useRef(0);
+  const observedState = useRef<ShowState | null>(null);
+  const [goldCommand, setGoldCommand] = useState<string | null>(null);
+  useEffect(() => {
+    if (!goldCommand) return;
+    const timer = setTimeout(() => setGoldCommand(null), GOLDEN_FINALE_MS);
+    return () => clearTimeout(timer);
+  }, [goldCommand]);
 
   // Fullscreen + wake lock after the tap that opened this screen.
   useEffect(() => {
@@ -245,6 +254,8 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
   }, []);
 
   useEffect(() => {
+    observedState.current = null;
+    setGoldCommand(null);
     if (mode !== "sync") return;
     setStatus("connecting");
     recordActivity({ data: { fanId: fan.fan_id, kind: "concert_sync_entered" } }).catch(() => {});
@@ -257,8 +268,17 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
     const clockPoll = setInterval(calibrate, 30000);
     const fetchState = () => supabase.from("show_state").select("*").eq("event_id", LIGHT_EVENT_ID).maybeSingle().then(({ data, error }) => {
       if (!active) return;
-      if (error) { setStatus("lost"); return; }
-      if (data) { setState(previous => previous && Date.parse(previous.updated_at) > Date.parse(data.updated_at) ? previous : data as ShowState); setNow(Date.now() + clockOffset.current); setStatus("live"); }
+      if (error) { observedState.current = null; setGoldCommand(null); setStatus("lost"); return; }
+      if (data) {
+        const next = data as ShowState;
+        const previous = observedState.current;
+        if (!previous || Date.parse(next.updated_at) > Date.parse(previous.updated_at)) {
+          if (isNewGoldCommand(previous, next)) setGoldCommand(next.updated_at);
+          else setGoldCommand(null);
+          observedState.current = next;
+        }
+        setState(previous => previous && Date.parse(previous.updated_at) > Date.parse(data.updated_at) ? previous : next); setNow(Date.now() + clockOffset.current); setStatus("live");
+      }
     });
     fetchState();
     const ch = supabase
@@ -266,7 +286,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
       .on("postgres_changes", { event: "*", schema: "public", table: "show_state", filter: `event_id=eq.${LIGHT_EVENT_ID}` }, () => fetchState())
       .subscribe((s) => {
         if (s === "SUBSCRIBED") { setStatus("live"); fetchState(); }
-        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setStatus("lost");
+        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") { observedState.current = null; setGoldCommand(null); setStatus("lost"); }
       });
     const bc = supabase.channel(SHOW_BROADCAST_CHANNEL)
       // A broadcast is only a "wake up" ping: re-read the admin-only table so nobody can spoof colors.
@@ -277,7 +297,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
     const pres = supabase.channel(PRESENCE_CHANNEL, { config: { presence: { key: fan.fan_id } } });
     pres.subscribe((s) => { if (s === "SUBSCRIBED") pres.track({ at: Date.now() }).catch(() => {}); });
     // Safety net: re-read state when the phone wakes or regains focus.
-    const onVis = () => { if (document.visibilityState === "visible") { void calibrate(); fetchState(); } };
+    const onVis = () => { observedState.current = null; setGoldCommand(null); if (document.visibilityState === "visible") { void calibrate(); fetchState(); } };
     document.addEventListener("visibilitychange", onVis);
     return () => { active = false; clearInterval(clockPoll); clearInterval(poll); supabase.removeChannel(ch); supabase.removeChannel(bc); supabase.removeChannel(pres); document.removeEventListener("visibilitychange", onVis); };
   }, [mode, fan.fan_id]);
@@ -307,6 +327,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
       {wave && <div className="lightstick-wave pointer-events-none absolute inset-0" />}
       <div className={`pointer-events-none absolute inset-0 bg-black ${breathing ? "animate-breathe" : "opacity-0"}`} />
       {showOpening && <OpeningScene frame={opening} color={ownHex} />}
+      {mode === "sync" && goldCommand && <GoldenFinale key={goldCommand} command={goldCommand} />}
       <div className="lightstick-header relative z-10 flex flex-wrap items-center justify-between gap-2 p-3">
         <Button variant="ghost" onClick={onExit} aria-label="Exit lightstick" className="min-h-11 bg-foreground/35 px-3 text-sm font-bold backdrop-blur"><X className="h-4 w-4" /> EXIT</Button>
         <Button variant="ghost" className="min-h-11 px-2 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>EDIT STAR</Button>
