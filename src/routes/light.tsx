@@ -312,9 +312,10 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         <Button variant="ghost" className="min-h-11 px-2 border border-background/40 bg-foreground/50 text-background" onClick={onChangeColor}>EDIT STAR</Button>
         <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 bg-foreground/35" aria-label="Fullscreen light" title="Fullscreen light" onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}><Maximize className="h-4 w-4" /></Button>
         {mode === "sync" && (
-          <span role="status" className="flex basis-full items-center justify-center gap-1 rounded-md bg-foreground/35 px-3 py-2 font-mono text-[11px] backdrop-blur">
-            {status === "live" ? <><Radio className="h-3 w-3" /> CONNECTED TO THE SHOW</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}
-          </span>
+          <div role="status" className="flex basis-full flex-col items-center gap-1 rounded-md bg-foreground/70 px-3 py-2 text-center backdrop-blur">
+            <span className="flex items-center gap-1 font-mono text-[11px]">{status === "live" ? <><Radio className="h-3 w-3" /> CONNECTED TO THE SHOW</> : status === "lost" ? <><WifiOff className="h-3 w-3" /> RECONNECTING</> : "CONNECTING…"}</span>
+            {status === "live" && <span className="text-xs">Your light is now synced with the stage.</span>}
+          </div>
         )}
       </div>
       <div className="relative flex flex-1 flex-col items-center justify-center px-6 text-center">
@@ -326,7 +327,7 @@ function Lightstick({ fan, initialMode, onExit, onChangeColor }: { fan: LightFan
         {!showOpening && message && <p className="mt-6 font-display text-3xl font-extrabold drop-shadow">{message}</p>}
       </div>
       <div className="lightstick-modes relative p-3">
-        {mode !== "sync" ? <div className="mb-3 text-center"><p className="mb-2 text-sm">3. Join Concert Sync</p><Button className="min-h-12 w-full whitespace-normal" onClick={() => setMode("sync")}><Radio /> JOIN CONCERT SYNC</Button><p className="mt-2 text-xs">Let tonight's show control your light.</p></div> : <Button variant="ghost" className="mb-3 min-h-12 w-full border border-background/40 bg-foreground/35" onClick={() => setMode("solid")}><WifiOff /> LEAVE CONCERT SYNC</Button>}
+        {mode !== "sync" ? <div className="mb-3 rounded-md bg-foreground/70 p-3 text-center backdrop-blur"><p className="mb-2 text-sm">3. Join Concert Sync</p><Button className="min-h-16 w-full whitespace-normal font-display text-lg font-extrabold" onClick={() => setMode("sync")}><Radio /> JOIN CONCERT SYNC</Button><p className="mt-2 text-sm">Let the artist control your light.</p></div> : <Button variant="ghost" className="mb-3 min-h-12 w-full border border-background/40 bg-foreground/35" onClick={() => setMode("solid")}><WifiOff /> LEAVE CONCERT SYNC</Button>}
         <div className="grid grid-cols-3 gap-2">
         {([["solid", "Solid", Sun], ["breathing", "Breathe", Waves], ["wave", "Wave", Sparkles]] as const).map(([m, l, Icon]) => (
           <Button variant="ghost" key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
