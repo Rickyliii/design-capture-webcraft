@@ -3,6 +3,9 @@ import yukon from "@/assets/memory-yukon.jpg.asset.json";
 import sorry from "@/assets/memory-sorry.jpg.asset.json";
 import baby from "@/assets/memory-baby.jpg.asset.json";
 import ghost from "@/assets/memory-ghost.jpg.asset.json";
+import cruelSummer from "@/assets/memory-cruel-summer.jpg.asset.json";
+import loveStory from "@/assets/memory-love-story.jpg.asset.json";
+import antiHero from "@/assets/memory-anti-hero.jpg.asset.json";
 
 export type Song = { id: string; artist: string; title: string; vibe: string; image: string };
 
