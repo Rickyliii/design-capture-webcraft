@@ -19,7 +19,7 @@ export function GoldenFinale({ command }: { command: string }) {
     const style = getComputedStyle(element);
     const gold = style.getPropertyValue("--finale-spark").trim();
     const trail = style.getPropertyValue("--finale-trail").trim();
-    const bursts = [[0.28, 0.35, 0], [0.74, 0.46, 320], [0.48, 0.62, 650], [0.58, 0.27, 950]];
+    const bursts = [[0.28, 0.35, 0], [0.74, 0.46, 320], [0.48, 0.62, 650], [0.58, 0.27, 950]] as const;
     const particles = bursts.flatMap(([x, y, delay]) => Array.from({ length: 28 }, (_, i) => ({
       x: x * width, y: y * height, delay,
       angle: i * Math.PI * 2 / 28 + delay / 1000,

@@ -19,10 +19,10 @@ describe("App routing", () => {
   it("shows the bottom tabs in the agreed order", () => {
     expect(tabs.map(({ label }) => label)).toEqual([
       "Show",
+      "Live",
       "Forum",
       "Rewards",
       "Profile",
-      "Live",
       "Artists",
     ]);
   });

@@ -4,10 +4,10 @@ import { Home, MessagesSquare, Gift, IdCard, Radio, BarChart3 } from "lucide-rea
 
 export const tabs = [
   { to: "/", label: "Show", icon: Home },
+  { to: "/live", label: "Live", icon: Radio },
   { to: "/messages", label: "Forum", icon: MessagesSquare },
   { to: "/rewards", label: "Rewards", icon: Gift },
   { to: "/pass", label: "Profile", icon: IdCard },
-  { to: "/live", label: "Live", icon: Radio },
   { to: "/artists", label: "Artists", icon: BarChart3 },
 ] as const;
 
