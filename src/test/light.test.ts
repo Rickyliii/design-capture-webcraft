@@ -31,8 +31,8 @@ describe("live light", () => {
   it("restore personal colors shows each fan's own color", () => {
     expect(displayFor(run("team"), "ice_cyan", Date.now()).hex).toBe("#38BDF8");
   });
-  it("aurora and breathing use the fan's own color", () => {
-    expect(displayFor(run("aurora"), "amber", Date.now())).toMatchObject({ hex: "#F59E0B", aurora: true });
+  it("wave and breathing use the fan's own color", () => {
+    expect(displayFor(run("wave"), "amber", Date.now())).toMatchObject({ hex: "#F59E0B", wave: true });
     expect(displayFor(run("breathing"), "amber", Date.now()).breathing).toBe(true);
   });
   it("stop returns phones to waiting", () => {
