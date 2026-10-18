@@ -6,7 +6,9 @@ export function openingFrame(state: ShowState | null, now: number) {
   if (!state?.is_show_active || !state.sequence_start_time) return idle;
   const start = Date.parse(state.sequence_start_time);
   if (!Number.isFinite(start)) return idle;
-  const elapsed = (now - start) / 1000;
+  const at = state.mode === "awakening_paused" ? Date.parse(state.updated_at) : now;
+  const elapsed = (at - start) / 1000;
+  if (!Number.isFinite(elapsed)) return idle;
   if (elapsed < 0) return idle;
   let seconds: number;
   let durationSeconds = AWAKENING_LENGTH;
@@ -23,7 +25,7 @@ export function openingFrame(state: ShowState | null, now: number) {
     const from = timeline.cues[index] ?? 0;
     const to = timeline.cues[index + 1] ?? end;
     seconds = (stops[index] ?? 0) + (elapsed - from) / (to - from) * ((stops[index + 1] ?? 27) - (stops[index] ?? 0));
-  } else if (state.mode === "awakening") {
+  } else if (state.mode === "awakening" || state.mode === "awakening_paused") {
     // Preserve the uploaded renderer's 27-second choreography while playing it in 22 seconds.
     seconds = elapsed * 27 / AWAKENING_LENGTH;
     if (elapsed >= AWAKENING_LENGTH) return { visible: false, seconds: 27, playbackSeconds: AWAKENING_LENGTH, durationSeconds, phase: "reveal", complete: true };
