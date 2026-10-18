@@ -161,3 +161,37 @@ html[data-concert-light], html[data-concert-light] body { background: var(--conc
 .opening-scene .static-sky i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--star-solar-gold); box-shadow: 0 0 6px var(--star-solar-gold); }
 .opening-copy { background: linear-gradient(0deg, color-mix(in srgb, var(--foreground) 40%, transparent), transparent 40%); }
 .opening-scene .personal-light-label { position: absolute; top: 40%; left: 58%; font-size: 11px; }
+
+/* Give the signature live activity its own treatment within the existing drops. */
+.fd-live-features .fd-drop-awakening {
+  background: var(--cobalt);
+  color: var(--cobalt-foreground);
+  border-color: var(--border);
+  box-shadow: var(--shadow-pop);
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.fd-live-features .fd-drop-awakening:hover {
+  transform: translateY(-3px);
+}
+.fd-live-features .fd-drop-awakening .fd-drop-copy p { color: var(--cobalt-foreground); opacity: .9; }
+.fd-live-features .fd-drop-awakening .fd-drop-icon {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.fd-live-features .fd-drop-awakening .fd-drop-icon svg { animation: awakening-spark 4s ease-in-out infinite; }
+.fd-live-features .fd-drop-awakening .fd-drop-copy button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--border);
+  font-family: var(--font-sans);
+  max-width: 100%;
+  white-space: normal;
+}
+@keyframes awakening-spark { 0%,100% { transform: translateY(2px) rotate(-8deg); } 50% { transform: translateY(-3px) rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .fd-live-features .fd-drop-awakening { transition: none; }
+  .fd-live-features .fd-drop-awakening:hover { transform: none; }
+  .fd-live-features .fd-drop-awakening .fd-drop-icon svg { animation: none; }
+}
