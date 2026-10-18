@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- Merchandise sample collection added directly to Show with product imagery and three named items; no checkout or invented prices.
 - Chorus screen rebuilt as a video flow: live camera viewfinder, 15-sec record, watch back, send
 - Artist switched to Justin Bieber on every screen, with real song titles (Peaches, YUKON, Sorry, Baby)
 - Live tab added (/live): in-concert "Show night" sector with locked exclusive-event slots — activities TBD from user

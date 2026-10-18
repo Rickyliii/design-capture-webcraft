@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { AppShell } from "@/components/AppShell";
+import { Merchandise } from "@/components/Merchandise";
 import { isGateScanned, setGateScanned } from "@/lib/gate";
 import { MessageCircle, Gift, ArrowRight, Ticket, X, ScanLine } from "lucide-react";
 
@@ -65,6 +66,8 @@ function Index() {
         <span className="flex items-center gap-2"><Ticket className="h-5 w-5" /> Get tickets for a friend</span>
         <ArrowRight className="h-5 w-5" />
       </Link>
+
+      <Merchandise />
 
       <h2 className="mb-3 mt-8 text-xl font-extrabold">Before the show</h2>
       <div className="space-y-3">
